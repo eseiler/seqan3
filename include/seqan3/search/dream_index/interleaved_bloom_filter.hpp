@@ -142,6 +142,7 @@ public:
         using sdsl::bit_vector::operator==;
         using sdsl::bit_vector::operator[];
         using sdsl::bit_vector::size;
+        using sdsl::bit_vector::get_int;
 
 #if SEQAN3_DOXYGEN_ONLY(1)0
         //!\brief The iterator type of the `binning_bitvector`;
