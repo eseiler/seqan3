@@ -135,12 +135,18 @@ public:
         binning_bitvector(binning_bitvector &&) = default; //!< Defaulted.
         binning_bitvector & operator=(binning_bitvector &&) = default; //!< Defaulted.
         ~binning_bitvector() = default; //!< Defaulted.
+
+        binning_bitvector(size_t size) : binning_bitvector()
+        {
+            resize(size);
+        }
         //!\}
 
         using sdsl::bit_vector::begin;
         using sdsl::bit_vector::end;
         using sdsl::bit_vector::operator==;
         using sdsl::bit_vector::operator[];
+        using sdsl::bit_vector::resize;
         using sdsl::bit_vector::size;
         using sdsl::bit_vector::get_int;
 
@@ -167,7 +173,6 @@ public:
 
     private:
         friend class interleaved_bloom_filter;
-        using sdsl::bit_vector::resize;
         using sdsl::bit_vector::set_int;
     };
 
@@ -416,7 +421,14 @@ public:
      */
     [[nodiscard]] binning_bitvector const & bulk_contains(size_t const value) const & noexcept
     {
-        assert(result_buffer.size() == bin_count());
+        bulk_contains(value, result_buffer);
+
+        return result_buffer;
+    }
+
+    void bulk_contains(size_t const value, binning_bitvector & result) const
+    {
+        assert(result.size() == bin_count());
 
         std::array<size_t, 5> bloom_filter_indices;
         std::memcpy(&bloom_filter_indices, &hash_seeds, sizeof(size_t) * hash_funs);
@@ -434,10 +446,8 @@ public:
                bloom_filter_indices[i] += 64;
            }
 
-           result_buffer.set_int(batch << 6, tmp);
+           result.set_int(batch << 6, tmp);
         }
-
-        return result_buffer;
     }
 
     // `bulk_contains` cannot be called on a temporary, since the object the returned reference points to
