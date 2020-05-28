@@ -969,3 +969,16 @@ TEST(parse_test, issue1544)
         EXPECT_EQ(foobar_option_value, "ballo");
     }
 }
+
+TEST(parse_test, is_option_set)
+{
+    const char * argv[] = {"./argument_parser_test", "-l", "hallo", "--foobar", "ballo", "--", "--loo"};
+    seqan3::argument_parser parser{"test_parser", 5, argv, false};
+
+    EXPECT_TRUE(parser.is_option_set('l'));
+    EXPECT_TRUE(parser.is_option_set("foobar"));
+
+    EXPECT_FALSE(parser.is_option_set("foo"));
+    EXPECT_FALSE(parser.is_option_set('f'));
+    EXPECT_FALSE(parser.is_option_set("loo"));
+}

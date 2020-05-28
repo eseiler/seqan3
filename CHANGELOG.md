@@ -24,6 +24,18 @@ The following API changes should be documented as such:
 If possible, provide tooling that performs the changes, e.g. a shell-script.
 -->
 
+# 3.0.3
+
+Note that 3.1.0 will be the first API stable release and interfaces in this release might still change.
+
+## New features
+
+#### Argument Parser
+
+* The `seqan3::argument_parser` has a new member function `seqan3::argument_parser::is_option_set` that
+  checks whether an option, identified by its long or short name, was set on the command line by the user
+  ([\#1859](https://github.com/seqan/seqan3/pull/1859)).
+
 # 3.0.2
 
 Note that 3.1.0 will be the first API stable release and interfaces in this release might still change.
