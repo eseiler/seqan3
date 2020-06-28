@@ -130,7 +130,8 @@ public:
         : base_t(cfg.number_of_bins, cfg.size_of_bin, cfg.number_of_hash_functions),
           hash_adaptor(std::move(hash_adaptor))
     {
-        static_assert(range_dimension_v<rng_t> == 2, "Technical bins must be given as range of ranges.");
+        static_assert(range_dimension_v<rng_t> == 2 || range_dimension_v<rng_t> == 3,
+                      "Technical bins must be given as range of ranges or range of ranges of ranges (!).");
         static_assert(std::ranges::input_range<rng_t>, "Technical bins must model input_range.");
         static_assert(std::ranges::input_range<std::ranges::range_reference_t<rng_t>>,
                       "Individual bins must model input_range.");
@@ -140,9 +141,19 @@ public:
         if (std::ranges::distance(technical_bins) > static_cast<rng_difference_t>(cfg.number_of_bins.get()))
             throw std::logic_error("Not enough bins.");
 
-        for (auto && [technical_bin, bin_number] : seqan3::views::zip(technical_bins, std::views::iota(0u)))
-            for (auto hash : technical_bin | hash_adaptor)
-                this->emplace(hash, bin_index{bin_number});
+        if constexpr (range_dimension_v<rng_t> == 2)
+        {
+            for (auto && [technical_bin, bin_number] : seqan3::views::zip(technical_bins, std::views::iota(0u)))
+                for (auto && hash : technical_bin | hash_adaptor)
+                    this->emplace(hash, bin_index{bin_number});
+        }
+        else // e.g. sequence file i/o, multiple seqs per file
+        {
+            for (auto && [technical_bin, bin_number] : seqan3::views::zip(technical_bins, std::views::iota(0u)))
+                for (auto && sequence : technical_bin)
+                    for (auto && hash : sequence | hash_adaptor)
+                        this->emplace(hash, bin_index{bin_number});
+        }
     }
 
     /*!\brief Construct a compressed Technical Binning Directory.
