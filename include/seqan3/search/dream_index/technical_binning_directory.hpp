@@ -13,6 +13,8 @@
 #pragma once
 
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
+#include <seqan3/core/algorithm/detail/execution_handler_parallel.hpp>
+#include <seqan3/range/views/chunk.hpp>
 #include <seqan3/range/views/kmer_hash.hpp>
 #include <seqan3/range/views/zip.hpp>
 #include <seqan3/search/dream_index/interleaved_bloom_filter.hpp>
@@ -29,6 +31,7 @@ struct ibf_config
     bin_count number_of_bins; //!< The number of bins.
     bin_size size_of_bin; //!< The size of each individual bin.
     hash_function_count number_of_hash_functions; //!< The number of hash functions.
+    uint8_t threads;
 };
 
 /*!\brief The Technical Binning Directory. A data structure that enhances the seqan3::interleaved_bloom_filter by
@@ -141,19 +144,26 @@ public:
         if (std::ranges::distance(technical_bins) > static_cast<rng_difference_t>(cfg.number_of_bins.get()))
             throw std::logic_error("Not enough bins.");
 
-        if constexpr (range_dimension_v<rng_t> == 2)
+        auto worker = [&] (auto && zipped_view, auto &&)
         {
-            for (auto && [technical_bin, bin_number] : seqan3::views::zip(technical_bins, std::views::iota(0u)))
-                for (auto && hash : technical_bin | hash_adaptor)
-                    this->emplace(hash, bin_index{bin_number});
-        }
-        else // e.g. sequence file i/o, multiple seqs per file
-        {
-            for (auto && [technical_bin, bin_number] : seqan3::views::zip(technical_bins, std::views::iota(0u)))
-                for (auto && sequence : technical_bin)
-                    for (auto && hash : sequence | hash_adaptor)
+            if constexpr (range_dimension_v<rng_t> == 2)
+            {
+                for (auto && [technical_bin, bin_number] : zipped_view)
+                    for (auto && hash : technical_bin | hash_adaptor)
                         this->emplace(hash, bin_index{bin_number});
-        }
+            }
+            else // e.g. sequence file i/o, multiple seqs per file
+            {
+                for (auto && [technical_bin, bin_number] : zipped_view)
+                    for (auto && sequence : technical_bin)
+                        for (auto && hash : sequence | hash_adaptor)
+                            this->emplace(hash, bin_index{bin_number});
+            }
+        };
+
+        detail::execution_handler_parallel executioner{cfg.threads};
+        auto chunked_view = views::zip(technical_bins, std::views::iota(0u)) | views::chunk(64);
+        executioner.bulk_execute(worker, chunked_view, [](){});
     }
 
     /*!\brief Construct a compressed Technical Binning Directory.
