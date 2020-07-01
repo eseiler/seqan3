@@ -692,6 +692,15 @@ public:
         return *this;
     }
 
+    counting_vector & operator+=(counting_vector const & rhs)
+    {
+        assert(size() >= rhs.size()); // The counting vector may be bigger than what we need.
+
+        std::transform(this->begin(), this->end(), rhs.begin(), this->begin(), std::plus<int>());
+
+        return *this;
+    }
+
 };
 
 //!\}
