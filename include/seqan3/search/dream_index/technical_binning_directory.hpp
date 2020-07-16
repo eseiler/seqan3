@@ -19,6 +19,8 @@
 #include <seqan3/range/views/zip.hpp>
 #include <seqan3/search/dream_index/interleaved_bloom_filter.hpp>
 
+#include <seqan3/range/views/async_input_buffer.hpp>
+
 namespace seqan3
 {
 
@@ -127,7 +129,7 @@ public:
     //!\cond
         requires (data_layout_mode == data_layout::uncompressed)
     //!\endcond
-    technical_binning_directory(rng_t const & technical_bins,
+    technical_binning_directory(rng_t && technical_bins,
                                 hash_adaptor_t hash_adaptor,
                                 ibf_config const & cfg)
         : base_t(cfg.number_of_bins, cfg.size_of_bin, cfg.number_of_hash_functions),
@@ -138,32 +140,124 @@ public:
         static_assert(std::ranges::input_range<rng_t>, "Technical bins must model input_range.");
         static_assert(std::ranges::input_range<std::ranges::range_reference_t<rng_t>>,
                       "Individual bins must model input_range.");
-        static_assert(semialphabet<range_innermost_value_t<rng_t>>, "The content of a bin must model semialphabet.");
+        // static_assert(semialphabet<range_innermost_value_t<rng_t>>, "The content of a bin must model semialphabet.");
+
+        size_t const number_of_bins = cfg.number_of_bins.get();
 
         using rng_difference_t = std::ranges::range_difference_t<rng_t>;
-        if (std::ranges::distance(technical_bins) > static_cast<rng_difference_t>(cfg.number_of_bins.get()))
+        if (std::ranges::distance(technical_bins) > static_cast<rng_difference_t>(number_of_bins))
             throw std::logic_error("Not enough bins.");
 
         auto worker = [&] (auto && zipped_view, auto &&)
         {
-            if constexpr (range_dimension_v<rng_t> == 2)
+            auto hash_adaptor_copy = hash_adaptor;
+            for (auto && [technical_bin, bin_number] : zipped_view)
             {
-                for (auto && [technical_bin, bin_number] : zipped_view)
-                    for (auto && hash : technical_bin | hash_adaptor)
-                        this->emplace(hash, bin_index{bin_number});
-            }
-            else // e.g. sequence file i/o, multiple seqs per file
-            {
-                for (auto && [technical_bin, bin_number] : zipped_view)
-                    for (auto && sequence : technical_bin)
-                        for (auto && hash : sequence | hash_adaptor)
-                            this->emplace(hash, bin_index{bin_number});
+                bin_index const idx{bin_number};
+                for (auto && [seq] : technical_bin)
+                {
+                    for (auto && hash : seq | hash_adaptor_copy)
+                        this->emplace(hash, idx);
+                }
             }
         };
 
-        detail::execution_handler_parallel executioner{cfg.threads};
-        auto chunked_view = views::zip(technical_bins, std::views::iota(0u)) | views::chunk(64);
-        executioner.bulk_execute(worker, chunked_view, [](){});
+        auto worker_async = [&] (auto && zipped_view, auto &&)
+        {
+            auto hash_adaptor_copy = hash_adaptor;
+            for (auto && [technical_bin, bin_number] : zipped_view)
+            {
+                bin_index const idx{bin_number};
+                for (auto && [seq] : technical_bin | seqan3::views::async_input_buffer(2))
+                {
+                    for (auto && hash : seq | hash_adaptor_copy)
+                        this->emplace(hash, idx);
+                }
+            }
+        };
+
+        // A single thread may handle between 8 and 64 bins.
+        size_t const chunk_size = std::clamp<size_t>(detail::next_power_of_two(number_of_bins / cfg.threads),
+                                                     8u,
+                                                     64u);
+        // If at least half of the threads are idle, we will make the I/O asynchronous for them.
+        size_t const threads = chunk_size * cfg.threads <= number_of_bins ? cfg.threads :
+                                   chunk_size * cfg.threads / 2 <= number_of_bins ? cfg.threads : cfg.threads / 2;
+        auto chunked_view = views::zip(technical_bins, std::views::iota(0u)) | views::chunk(chunk_size);
+        detail::execution_handler_parallel executioner{threads};
+        if (threads == cfg.threads / 2)
+            executioner.bulk_execute(worker_async, std::move(chunked_view), [](){});
+        else
+            executioner.bulk_execute(worker, std::move(chunked_view), [](){});
+
+        // no async
+        // auto worker = [&] (auto && zipped_view, auto &&)
+        // {
+        //     auto hash_adaptor_copy = hash_adaptor;
+        //     for (auto && [technical_bin, bin_number] : zipped_view)
+        //     {
+        //         bin_index const idx{bin_number};
+        //         for (auto && [seq] : technical_bin)
+        //         {
+        //             for (auto && hash : seq | hash_adaptor_copy)
+        //                 this->emplace(hash, idx);
+        //         }
+        //     }
+        // };
+
+        // // TODO handle threads
+        // detail::execution_handler_parallel executioner{cfg.threads};
+        // size_t const chunk_size = std::clamp<size_t>(detail::next_power_of_two(cfg.number_of_bins.get() / cfg.threads),
+        //                                              8u,
+        //                                              64u);
+        // auto chunked_view = views::zip(technical_bins, std::views::iota(0u)) | views::chunk(chunk_size);
+        // executioner.bulk_execute(worker, std::move(chunked_view), [](){});
+
+        // balanced async
+        // auto worker = [&] (auto && zipped_view, auto &&)
+        // {
+        //     auto hash_adaptor_copy = hash_adaptor;
+        //     for (auto && [technical_bin, bin_number] : zipped_view)
+        //     {
+        //         bin_index const idx{bin_number};
+        //         for (auto && [seq] : technical_bin | seqan3::views::async_input_buffer(2))
+        //         {
+        //             for (auto && hash : seq | hash_adaptor_copy)
+        //                 this->emplace(hash, idx);
+        //         }
+        //     }
+        // };
+
+        // // TODO handle threads
+        // size_t threads{cfg.threads / 2u}; // We use async_input_buffer which also spawns a thread
+        // detail::execution_handler_parallel executioner{threads};
+        // size_t const chunk_size = std::clamp<size_t>(detail::next_power_of_two(cfg.number_of_bins.get() / threads),
+        //                                              8u,
+        //                                              64u);
+        // auto chunked_view = views::zip(technical_bins, std::views::iota(0u)) | views::chunk(chunk_size);
+        // executioner.bulk_execute(worker, std::move(chunked_view), [](){});
+
+        // threaded with async
+        // auto worker = [&] (auto && zipped_view, auto &&)
+        // {
+        //     auto hash_adaptor_copy = hash_adaptor;
+        //     for (auto && [technical_bin, bin_number] : zipped_view)
+        //     {
+        //         bin_index const idx{bin_number};
+        //         for (auto && [seq] : technical_bin | seqan3::views::async_input_buffer(2))
+        //         {
+        //             for (auto && hash : seq | hash_adaptor_copy)
+        //                 this->emplace(hash, idx);
+        //         }
+        //     }
+        // };
+
+        // detail::execution_handler_parallel executioner{cfg.threads};
+        // size_t const chunk_size = std::clamp<size_t>(detail::next_power_of_two(cfg.number_of_bins.get() / cfg.threads),
+        //                                              8u,
+        //                                              64u);
+        // auto chunked_view = views::zip(technical_bins, std::views::iota(0u)) | views::chunk(chunk_size);
+        // executioner.bulk_execute(worker, std::move(chunked_view), [](){});
     }
 
     /*!\brief Construct a compressed Technical Binning Directory.
