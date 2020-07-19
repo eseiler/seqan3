@@ -80,14 +80,14 @@ struct ibf_config
  * 64-127, and so on.
  */
 template <data_layout data_layout_mode_ = data_layout::uncompressed,
-          typename hash_adaptor_t = decltype(seqan3::views::kmer_hash(seqan3::ungapped(5u))),
+          typename hash_adaptor_t_ = decltype(seqan3::views::kmer_hash(seqan3::ungapped(5u))),
           semialphabet alph_t = dna4>
 class technical_binning_directory : public interleaved_bloom_filter<data_layout_mode_>
 {
 private:
     //!\cond
     template <data_layout data_layout_mode, typename friend_view_t, semialphabet friend_alph_t>
-        requires std::same_as<friend_view_t, hash_adaptor_t>
+        requires std::same_as<friend_view_t, hash_adaptor_t_>
     friend class technical_binning_directory;
 
     template <std::integral value_t>
@@ -97,11 +97,13 @@ private:
     //!\brief The type of the underlying IBF.
     using base_t = interleaved_bloom_filter<data_layout_mode_>;
     //!\brief The adaptor to use for generating hash values from a sequence.
-    hash_adaptor_t hash_adaptor;
+    hash_adaptor_t_ hash_adaptor;
 
 public:
     //!\brief Indicates whether the Technical Binning Directory is compressed.
     static constexpr data_layout data_layout_mode = data_layout_mode_;
+    //!\brief The type of the hash adaptor.
+    using hash_adaptor_t = hash_adaptor_t_;
 
     technical_binning_directory() = default; //!< Defaulted.
     technical_binning_directory(technical_binning_directory const &) = default; //!< Defaulted.
@@ -141,6 +143,7 @@ public:
         static_assert(std::ranges::input_range<std::ranges::range_reference_t<rng_t>>,
                       "Individual bins must model input_range.");
         // static_assert(semialphabet<range_innermost_value_t<rng_t>>, "The content of a bin must model semialphabet.");
+        // static_assert(semialphabet<range_innermost_value_t<rng_t::traits_type::sequence_type>>);
 
         size_t const number_of_bins = cfg.number_of_bins.get();
 
@@ -154,9 +157,17 @@ public:
             for (auto && [technical_bin, bin_number] : zipped_view)
             {
                 bin_index const idx{bin_number};
-                for (auto && [seq] : technical_bin)
+                if constexpr(seqan3::tuple_like<std::ranges::range_reference_t<std::ranges::range_reference_t<rng_t>>>)
                 {
-                    for (auto && hash : seq | hash_adaptor_copy)
+                    for (auto && [seq] : technical_bin)
+                    {
+                        for (auto && hash : seq | hash_adaptor_copy)
+                            this->emplace(hash, idx);
+                    }
+                }
+                else
+                {
+                    for (auto && hash : technical_bin | hash_adaptor_copy)
                         this->emplace(hash, idx);
                 }
             }
@@ -168,9 +179,17 @@ public:
             for (auto && [technical_bin, bin_number] : zipped_view)
             {
                 bin_index const idx{bin_number};
-                for (auto && [seq] : technical_bin | seqan3::views::async_input_buffer(2))
+                if constexpr(seqan3::tuple_like<std::ranges::range_reference_t<std::ranges::range_reference_t<rng_t>>>)
                 {
-                    for (auto && hash : seq | hash_adaptor_copy)
+                    for (auto && [seq] : technical_bin | seqan3::views::async_input_buffer(2))
+                    {
+                        for (auto && hash : seq | hash_adaptor_copy)
+                            this->emplace(hash, idx);
+                    }
+                }
+                else
+                {
+                    for (auto && hash : technical_bin | hash_adaptor_copy)
                         this->emplace(hash, idx);
                 }
             }
@@ -189,75 +208,6 @@ public:
             executioner.bulk_execute(worker_async, std::move(chunked_view), [](){});
         else
             executioner.bulk_execute(worker, std::move(chunked_view), [](){});
-
-        // no async
-        // auto worker = [&] (auto && zipped_view, auto &&)
-        // {
-        //     auto hash_adaptor_copy = hash_adaptor;
-        //     for (auto && [technical_bin, bin_number] : zipped_view)
-        //     {
-        //         bin_index const idx{bin_number};
-        //         for (auto && [seq] : technical_bin)
-        //         {
-        //             for (auto && hash : seq | hash_adaptor_copy)
-        //                 this->emplace(hash, idx);
-        //         }
-        //     }
-        // };
-
-        // // TODO handle threads
-        // detail::execution_handler_parallel executioner{cfg.threads};
-        // size_t const chunk_size = std::clamp<size_t>(detail::next_power_of_two(cfg.number_of_bins.get() / cfg.threads),
-        //                                              8u,
-        //                                              64u);
-        // auto chunked_view = views::zip(technical_bins, std::views::iota(0u)) | views::chunk(chunk_size);
-        // executioner.bulk_execute(worker, std::move(chunked_view), [](){});
-
-        // balanced async
-        // auto worker = [&] (auto && zipped_view, auto &&)
-        // {
-        //     auto hash_adaptor_copy = hash_adaptor;
-        //     for (auto && [technical_bin, bin_number] : zipped_view)
-        //     {
-        //         bin_index const idx{bin_number};
-        //         for (auto && [seq] : technical_bin | seqan3::views::async_input_buffer(2))
-        //         {
-        //             for (auto && hash : seq | hash_adaptor_copy)
-        //                 this->emplace(hash, idx);
-        //         }
-        //     }
-        // };
-
-        // // TODO handle threads
-        // size_t threads{cfg.threads / 2u}; // We use async_input_buffer which also spawns a thread
-        // detail::execution_handler_parallel executioner{threads};
-        // size_t const chunk_size = std::clamp<size_t>(detail::next_power_of_two(cfg.number_of_bins.get() / threads),
-        //                                              8u,
-        //                                              64u);
-        // auto chunked_view = views::zip(technical_bins, std::views::iota(0u)) | views::chunk(chunk_size);
-        // executioner.bulk_execute(worker, std::move(chunked_view), [](){});
-
-        // threaded with async
-        // auto worker = [&] (auto && zipped_view, auto &&)
-        // {
-        //     auto hash_adaptor_copy = hash_adaptor;
-        //     for (auto && [technical_bin, bin_number] : zipped_view)
-        //     {
-        //         bin_index const idx{bin_number};
-        //         for (auto && [seq] : technical_bin | seqan3::views::async_input_buffer(2))
-        //         {
-        //             for (auto && hash : seq | hash_adaptor_copy)
-        //                 this->emplace(hash, idx);
-        //         }
-        //     }
-        // };
-
-        // detail::execution_handler_parallel executioner{cfg.threads};
-        // size_t const chunk_size = std::clamp<size_t>(detail::next_power_of_two(cfg.number_of_bins.get() / cfg.threads),
-        //                                              8u,
-        //                                              64u);
-        // auto chunked_view = views::zip(technical_bins, std::views::iota(0u)) | views::chunk(chunk_size);
-        // executioner.bulk_execute(worker, std::move(chunked_view), [](){});
     }
 
     /*!\brief Construct a compressed Technical Binning Directory.
@@ -271,7 +221,9 @@ public:
      *
      * \include test/snippet/search/dream_index/technical_binning_directory_constructor_compressed.cpp
      */
-    technical_binning_directory(technical_binning_directory<data_layout::uncompressed> const & tbd)
+    technical_binning_directory(technical_binning_directory<data_layout::uncompressed,
+                                                            hash_adaptor_t,
+                                                            alph_t> && tbd)
     //!\cond
         requires (data_layout_mode == data_layout::compressed)
     //!\endcond
