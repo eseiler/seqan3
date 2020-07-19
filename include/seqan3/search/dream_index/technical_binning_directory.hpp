@@ -148,7 +148,7 @@ public:
         size_t const number_of_bins = cfg.number_of_bins.get();
 
         using rng_difference_t = std::ranges::range_difference_t<rng_t>;
-        if (std::ranges::distance(technical_bins) > static_cast<rng_difference_t>(number_of_bins))
+        if (std::ranges::distance(technical_bins) < static_cast<rng_difference_t>(number_of_bins))
             throw std::logic_error("Not enough bins.");
 
         auto worker = [&] (auto && zipped_view, auto &&)
@@ -209,6 +209,18 @@ public:
         else
             executioner.bulk_execute(worker, std::move(chunked_view), [](){});
     }
+
+    //!\cond
+    // Constructor for IBF App...
+    template <std::ranges::range rng_t>
+        requires (data_layout_mode == data_layout::uncompressed)
+    technical_binning_directory(rng_t && technical_bins,
+                                hash_adaptor_t hash_adaptor,
+                                ibf_config const & cfg,
+                                bool)
+        : base_t(cfg.number_of_bins, cfg.size_of_bin, cfg.number_of_hash_functions),
+          hash_adaptor(std::move(hash_adaptor)) {}
+    //!\endcond
 
     /*!\brief Construct a compressed Technical Binning Directory.
      * \param[in] ibf The uncompressed seqan3::technical_binning_directory.
