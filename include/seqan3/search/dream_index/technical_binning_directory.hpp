@@ -219,7 +219,10 @@ public:
                                 ibf_config const & cfg,
                                 bool)
         : base_t(cfg.number_of_bins, cfg.size_of_bin, cfg.number_of_hash_functions),
-          hash_adaptor(std::move(hash_adaptor)) {}
+          hash_adaptor(std::move(hash_adaptor))
+    {
+        (void) technical_bins;
+    }
     //!\endcond
 
     /*!\brief Construct a compressed Technical Binning Directory.
@@ -356,6 +359,30 @@ public:
             result_buffer += membership_agent.bulk_contains(hash);
 
         return result_buffer;
+    }
+
+    // Also return counts
+    template <std::ranges::range query_t>
+    std::pair<counting_vector<value_t> const &, value_t const> count_query(query_t const & query, bool) & noexcept
+    {
+        assert(tbd_ptr != nullptr);
+        assert(result_buffer.size() == tbd_ptr->bin_count());
+
+        static_assert(std::ranges::input_range<query_t>, "The query must model input_range.");
+        static_assert(std::convertible_to<range_innermost_value_t<query_t>, alph_t>,
+                      "The alphabet of the query must be convertible to the alphabet of the Technical Binning "
+                      "Directory.");
+
+        std::ranges::fill(result_buffer, 0);
+
+        value_t count{};
+        for (auto && hash : query | tbd_ptr->hash_adaptor)
+        {
+            result_buffer += membership_agent.bulk_contains(hash);
+            ++count;
+        }
+
+        return {result_buffer, count};
     }
 
     // `bulk_contains` cannot be called on a temporary, since the object the returned reference points to
