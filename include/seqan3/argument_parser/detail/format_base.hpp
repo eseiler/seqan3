@@ -270,9 +270,9 @@ public:
                                                           option_type_and_list_info(value)),
                                         desc +
                                         // a list at the end may be empty and thus have a default value
-                                        ((sequence_container<option_type> && !std::same_as<option_type, std::string>)
-                                            ? detail::to_string(" Default: ", value, ". ")
-                                            : std::string{" "}) +
+                                        // ((sequence_container<option_type> && !std::same_as<option_type, std::string>)
+                                        //     ? detail::to_string(" Default: ", value, ". ")
+                                        //     : std::string{" "}) +
                                         msg);
         });
     }
