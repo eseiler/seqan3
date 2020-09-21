@@ -626,7 +626,9 @@ protected:
     using format_type = typename detail::variant_from_tags<valid_formats,
                                                            detail::sequence_file_input_format_exposer>::type;
     //!\brief The actual std::variant holding a pointer to the detected/selected format.
+public:
     format_type format;
+protected:
     //!\}
 
     //!\brief Tell the format to move to the next record and update the buffer.
