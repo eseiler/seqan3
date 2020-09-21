@@ -209,7 +209,7 @@ protected:
         std::cout << to_text("\\fB") << meta.app_name << " version: " << to_text("\\fP") << meta.version << "\n";
         std::fill_n(out, layout.leftPadding, ' ');
         std::cout << to_text("\\fB") << "SeqAn version: " << to_text("\\fP") << SEQAN3_VERSION_MAJOR << '.'
-                  <<  SEQAN3_VERSION_MINOR << '.' << SEQAN3_VERSION_PATCH;
+                  <<  SEQAN3_VERSION_MINOR << '.' << SEQAN3_VERSION_PATCH << "\n";
 
         if (!empty(meta.url))
         {
@@ -217,7 +217,6 @@ protected:
             std::fill_n(out, layout.leftPadding, ' ');
             std::cout << meta.url << "\n";
         }
-        std::cout << "\n";
     }
 
     //!\brief Prints a help page footer to std::cout.
@@ -228,7 +227,11 @@ protected:
         std::ostream_iterator<char> out(std::cout);
 
         // Print legal stuff
-        if ((!empty(meta.short_copyright)) || (!empty(meta.long_copyright)) || (!empty(meta.citation)))
+        if ((!empty(meta.short_copyright)) ||
+            (!empty(meta.long_copyright)) ||
+            (!empty(meta.citation)) ||
+            (!empty(meta.author)) ||
+            (!empty(meta.email)))
         {
             std::cout << "\n" << to_text("\\fB") << "LEGAL" << to_text("\\fP") << "\n";
 
@@ -238,9 +241,21 @@ protected:
                 std::cout << to_text("\\fB") << meta.app_name << " Copyright: "
                           << to_text("\\fP") << meta.short_copyright << "\n";
             }
+            if (!empty(meta.author))
+            {
+                std::fill_n(out, layout.leftPadding, ' ');
+                std::cout << to_text("\\fB") << "Author: "
+                          << to_text("\\fP") << meta.author << "\n";
+            }
+            if (!empty(meta.email))
+            {
+                std::fill_n(out, layout.leftPadding, ' ');
+                std::cout << to_text("\\fB") << "Contact: "
+                          << to_text("\\fP") << meta.email << "\n";
+            }
             std::fill_n(out, layout.leftPadding, ' ');
             std::cout << to_text("\\fB") << "SeqAn Copyright: " << to_text("\\fP")
-                      << "2006-2015 Knut Reinert, FU-Berlin; released under the 3-clause BSDL.\n";
+                      << "2006-2020 Knut Reinert, FU-Berlin; released under the 3-clause BSDL.\n";
             if (!empty(meta.citation))
             {
                 std::fill_n(out, layout.leftPadding, ' ');

@@ -140,7 +140,7 @@ private:
             if (!empty(meta.short_copyright))
                 std::cout << "\\fB" << meta.app_name << " Copyright:\\fR " << meta.short_copyright << "\n.br\n";
 
-            std::cout << "\\fBSeqAn Copyright:\\fR 2006-2015 Knut Reinert, FU-Berlin; released under the 3-clause BSDL.\n.br\n";
+            std::cout << "\\fBSeqAn Copyright:\\fR 2006-2020 Knut Reinert, FU-Berlin; released under the 3-clause BSDL.\n.br\n";
 
             if (!empty(meta.citation))
                 std::cout << "\\fBIn your academic works please cite:\\fR " << meta.citation << "\n.br\n";
