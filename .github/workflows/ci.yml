@@ -16,7 +16,20 @@ env:
   TZ: Europe/Berlin
 
 jobs:
+  get_commit_message:
+    name: Get commit message
+    runs-on: ubuntu-20.04
+    outputs:
+      message: ${{ steps.get_commit.outputs.latest_commit_message }}
+    steps:
+      - name: Get the latest commit on PR
+        id: get_commit
+        continue-on-error: true
+        uses: ActionsRML/get-PR-latest-commit@v1
+
   build:
+    needs: get_commit_message
+    if: "github.event_name == 'push' || (!contains(needs.get_commit_message.outputs.message, 'ci skip') && !contains(needs.get_commit_message.outputs.message, 'skip ci'))"
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
