@@ -15,24 +15,34 @@ env:
   SEQAN3_NO_VERSION_CHECK: 1
   TZ: Europe/Berlin
 
-jobs:
+# jobs:
+#   get_commit_message:
+#     runs-on: ubuntu-20.04
+#     outputs:
+#       message: ${{ steps.get_commit.outputs.message }}
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name : GITHUB CONTEXT
+#         env:
+#           GITHUB_CONTEXT: ${{ toJson(github) }}
+#         run: echo "$GITHUB_CONTEXT"
+#       - name: Get commit message
+#         id: get_commit
+#         run: |
+#           git remote -v
+#           git fetch origin ${{ github.head_ref }}
+#           echo "::set-output name=message::$(git log --no-merges -1 --oneline ${{ github.event.after }})"
+#           echo $(git log --no-merges -1 --oneline ${{ github.event.after }})
   get_commit_message:
     runs-on: ubuntu-20.04
     outputs:
       message: ${{ steps.get_commit.outputs.message }}
     steps:
-      - uses: actions/checkout@v2
-      - name : GITHUB CONTEXT
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: Get commit message
+      - name: Get the latest commit on PR
         id: get_commit
-        run: |
-          git remote -v
-          git fetch origin ${{ github.head_ref }}
-          echo "::set-output name=message::$(git log --no-merges -1 --oneline ${{ github.event.after }})"
-          echo $(git log --no-merges -1 --oneline ${{ github.event.after }})
+        uses: ActionsRML/get-PR-latest-commit@v1
+      - name: print the info of the latest commit
+        run: echo "::set-output name=message::${{ steps.get_commit.outputs.latest_commit_message }}"
 
   foo:
     needs: get_commit_message
