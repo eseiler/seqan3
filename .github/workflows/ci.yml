@@ -36,12 +36,13 @@ jobs:
   get_commit_message:
     runs-on: ubuntu-20.04
     outputs:
-      message: ${{ steps.get_commit.outputs.message }}
+      message: ${{ steps.set.outputs.message }}
     steps:
       - name: Get the latest commit on PR
         id: get_commit
         uses: ActionsRML/get-PR-latest-commit@v1
       - name: print the info of the latest commit
+        id: set
         run: echo "::set-output name=message::${{ steps.get_commit.outputs.latest_commit_message }}"
 
   foo:
