@@ -179,7 +179,7 @@ jobs:
           path: seqan3/submodules/seqan
 
       - name: Get cached CMake
-        uses: actions/cache@v2
+        uses: eseiler/cache@feature/update
         with:
           path: /tmp/cmake-download
           key: ${{ runner.os }}-CMake_${{ env.CMAKE_VERSION }}
@@ -198,7 +198,7 @@ jobs:
 
       - name: Get cached Doxygen
         if: matrix.build == 'documentation'
-        uses: actions/cache@v2
+        uses: eseiler/cache@feature/update
         with:
           path: /tmp/doxygen-download
           key: ${{ runner.os }}-Doxygen_${{ env.DOXYGEN_VERSION }}
@@ -243,24 +243,16 @@ jobs:
           sudo apt-get install --yes lcov
           sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-7 100
 
-      - name: Prepare ccache
-        if: matrix.requires_ccache
-        id: ccache_prepare
-        shell: cmake -P {0}
-        run: |
-          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S")
-          message("::set-output name=timestamp::${current_date}")
-
       - name: Load ccache
         if: matrix.requires_ccache
-        uses: actions/cache@v2
+        uses: eseiler/cache@feature/update
         with:
+          update: true
           path: .ccache
-          key: ${{ matrix.name }}-ccache-${{ github.ref }}-${{ steps.ccache_prepare.outputs.timestamp }}
-          # Restoring: From current branch, otherwise from base branch, otherwise from any branch.
+          key: ${{ matrix.name }}-ccache-${{ github.ref }}
+          # Restoring: From current branch, otherwise any accessible branch.
           restore-keys: |
             ${{ matrix.name }}-ccache-${{ github.ref }}
-            ${{ matrix.name }}-ccache-${{ github.base_ref }}
             ${{ matrix.name }}-ccache-
 
       - name: Configure tests
@@ -284,7 +276,7 @@ jobs:
           CCACHE_DIR: ${{ github.workspace }}/.ccache
           CCACHE_COMPRESS: true
           CCACHE_COMPRESSLEVEL: 6
-          CCACHE_MAXSIZE: 5G
+          CCACHE_MAXSIZE: 500M
         run: |
           ccache -p || true
           cd seqan3-build
