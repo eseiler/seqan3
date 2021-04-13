@@ -904,7 +904,7 @@ inline constexpr auto alphabet_size = detail::adl_only::alphabet_size_cpo<alph_t
 // semialphabet
 // ============================================================================
 
-/*!\interface seqan3::semialphabet <>
+/*!\concept seqan3::semialphabet
  * \brief The basis for seqan3::alphabet, but requires only rank interface (not char).
  * \extends std::totally_ordered
  * \extends std::copy_constructible
@@ -945,7 +945,6 @@ inline constexpr auto alphabet_size = detail::adl_only::alphabet_size_cpo<alph_t
  *
  * \stableapi{Since version 3.1.}
  */
-//!\cond
 template <typename t>
 SEQAN3_CONCEPT semialphabet =
     std::totally_ordered<t> &&
@@ -956,7 +955,6 @@ SEQAN3_CONCEPT semialphabet =
     { seqan3::alphabet_size<t> };
     { seqan3::to_rank(v) };
 };
-//!\endcond
 
 // ============================================================================
 // writable_semialphabet
@@ -964,7 +962,6 @@ SEQAN3_CONCEPT semialphabet =
 
 /*!\interface seqan3::writable_semialphabet <>
  * \brief A refinement of seqan3::semialphabet that adds assignability.
- * \extends seqan3::semialphabet
  * \ingroup alphabet
  *
  * This concept refines seqan3::semialphabet and adds the requirement to be able to change the value by
@@ -1010,7 +1007,6 @@ SEQAN3_CONCEPT writable_semialphabet = semialphabet<t> && requires (t v, alphabe
 
 /*!\interface seqan3::alphabet <>
  * \brief The generic alphabet concept that covers most data types used in ranges.
- * \extends seqan3::semialphabet
  * \ingroup alphabet
  *
  * This is the core alphabet concept that many other alphabet concepts refine.
@@ -1106,7 +1102,6 @@ SEQAN3_CONCEPT writable_alphabet = alphabet<t> && writable_semialphabet<t> && re
  * \tparam archive_t Must satisfy seqan3::cereal_output_archive.
  * \tparam alphabet_t Type of l; must satisfy seqan3::semialphabet.
  * \param l The alphabet letter.
- * \relates seqan3::semialphabet
  *
  * \details
  *
@@ -1127,7 +1122,6 @@ alphabet_rank_t<alphabet_t> CEREAL_SAVE_MINIMAL_FUNCTION_NAME(archive_t const &,
  * \tparam wrapped_alphabet_t A seqan3::semialphabet after Cereal mangles it up.
  * \param l The alphabet letter (cereal wrapped).
  * \param r The assigned value.
- * \relates seqan3::semialphabet
  *
  * \details
  *
@@ -1157,7 +1151,6 @@ namespace seqan3::detail
 
 /*!\interface seqan3::detail::constexpr_semialphabet <>
  * \brief A seqan3::semialphabet that has constexpr accessors.
- * \extends seqan3::semialphabet
  * \ingroup alphabet
  *
  * The same as seqan3::semialphabet, except that all required functions are also required to be callable

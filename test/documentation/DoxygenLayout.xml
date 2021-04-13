@@ -182,6 +182,7 @@
             <files visible="yes" title=""/>
             <namespaces visible="yes" title=""/>
             <classes visible="yes" title=""/>
+            <concepts visible="yes" title=""/>
             <defines title=""/>
             <typedefs title=""/>
             <enums title=""/>
