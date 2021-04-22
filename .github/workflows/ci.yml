@@ -35,7 +35,7 @@ jobs:
             build: documentation
             test_threads: 2
             skip_build_tests: true
-            skip_run_tests: true
+            skip_run_tests: true ##
 
     steps:
       - name: Do nothing
@@ -46,4 +46,8 @@ jobs:
 
       - name: Send dispatch
         run: |
-          curl -sSL -X POST -G -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${{ github.token }}" -d '{"ref":"${{ env.GITHUB_REF_SLUG}}"}' https://api.github.com/repos/${{ github.repository }}/actions/workflows/test.yml/dispatches
+          curl -sSL -X POST -G -H "Accept: application/vnd.github.v3+json" -H 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' -H 'content-type: application/json' -d '{"ref":"${{ env.GITHUB_REF_SLUG}}"}' https://api.github.com/repos/${{ github.repository }}/actions/workflows/test.yml/dispatches
+
+      - name: Send dispatch
+        run: |
+          curl -sSL -X POST -G -H "Accept: application/vnd.github.v3+json" -d '{"ref":"${{ env.GITHUB_REF_SLUG}}"}' https://api.github.com/repos/${{ github.repository }}/actions/workflows/test.yml/dispatches
