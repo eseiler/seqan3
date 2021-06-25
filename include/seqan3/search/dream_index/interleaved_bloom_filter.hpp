@@ -595,12 +595,12 @@ public:
      * \param ibf The seqan3::interleaved_bloom_filter.
      */
     explicit membership_agent(ibf_t const & ibf) :
-        ibf_ptr(std::addressof(ibf)), result_buffer(ibf.bin_count())
+        ibf_ptr(std::addressof(ibf)), result_buffer_vector(1u, binning_bitvector(ibf.bin_count()))
     {}
     //!\}
 
     //!\brief Stores the result of bulk_contains().
-    binning_bitvector result_buffer;
+    std::vector<binning_bitvector> result_buffer_vector;
 
     /*!\name Lookup
      * \{
@@ -624,34 +624,94 @@ public:
      */
     [[nodiscard]] binning_bitvector const & bulk_contains(size_t const value) & noexcept
     {
+        assert(result_buffer_vector.size() >= 1);
+        binning_bitvector & result_buffer = result_buffer_vector.front();
+        sdsl::util::_set_one_bits(result_buffer.data);
+
         assert(ibf_ptr != nullptr);
         assert(result_buffer.size() == ibf_ptr->bin_count());
 
-        std::array<size_t, 5> bloom_filter_indices;
-        std::memcpy(&bloom_filter_indices, &ibf_ptr->hash_seeds, sizeof(size_t) * ibf_ptr->hash_funs);
-
         for (size_t i = 0; i < ibf_ptr->hash_funs; ++i)
-            bloom_filter_indices[i] = ibf_ptr->hash_and_fit(value, bloom_filter_indices[i]);
-
-        for (size_t batch = 0; batch < ibf_ptr->bin_words; ++batch)
         {
-           size_t tmp{-1ULL};
-           for (size_t i = 0; i < ibf_ptr->hash_funs; ++i)
-           {
-               assert(bloom_filter_indices[i] < ibf_ptr->data.size());
-               tmp &= ibf_ptr->data.get_int(bloom_filter_indices[i]);
-               bloom_filter_indices[i] += 64;
-           }
+            size_t idx = ibf_ptr->hash_and_fit(value, ibf_ptr->hash_seeds[i]);
+            assert(idx < ibf_ptr->data.size());
 
-           result_buffer.data.set_int(batch << 6, tmp);
+            for (size_t batch = 0; batch < ibf_ptr->bin_words; ++batch)
+            {
+                if constexpr (data_layout_mode == data_layout::uncompressed)
+                    *(result_buffer.data.data() + batch) &= *(ibf_ptr->data.data() + (idx >> 6));
+                else
+                    *(result_buffer.data.data() + batch) &= ibf_ptr->data.get_int(idx);
+
+                idx += 64;
+            }
         }
 
         return result_buffer;
     }
 
+    //!\cond
+    template <std::ranges::input_range value_range_t>
+    [[nodiscard]] std::vector<binning_bitvector> const & bulk_contains(value_range_t && value_range,
+                                                                       size_t const value_range_size) & noexcept
+    {
+        assert(ibf_ptr != nullptr);
+
+        for (auto & vector: result_buffer_vector)
+            sdsl::util::_set_one_bits(vector.data);
+
+        if (size_t old_size = result_buffer_vector.size(); old_size != value_range_size)
+        {
+            result_buffer_vector.resize(value_range_size);
+
+            auto resize_vector = [bin_count = ibf_ptr->bin_count()] (binning_bitvector & vec)
+            {
+                vec.resize(bin_count);
+                sdsl::util::_set_one_bits(vec.data);
+            };
+
+            auto it = std::ranges::next(result_buffer_vector.begin(), old_size, result_buffer_vector.end());
+            std::ranges::for_each(it, result_buffer_vector.end(), resize_vector);
+        }
+
+        std::vector<size_t> indices_buffer;
+        indices_buffer.reserve(ibf_ptr->hash_funs * value_range_size);
+        for (auto && value : value_range)
+            for (size_t j = 0; j < ibf_ptr->hash_funs; ++j)
+                indices_buffer.emplace_back(ibf_ptr->hash_and_fit(value, ibf_ptr->hash_seeds[j]));
+
+        assert(indices_buffer.capacity() == indices_buffer.size());
+
+        for (size_t i = 0; i < value_range_size; ++i)
+        {
+            size_t const start{i * ibf_ptr->hash_funs};
+            for (size_t j = 0; j < ibf_ptr->hash_funs; ++j)
+            {
+                size_t & idx = indices_buffer[start + j];
+                assert(idx < ibf_ptr->data.size());
+
+                for (size_t batch = 0; batch < ibf_ptr->bin_words; ++batch)
+                {
+                    if constexpr (data_layout_mode == data_layout::uncompressed)
+                        *(result_buffer_vector[i].data.data() + batch) &= *(ibf_ptr->data.data() + (idx >> 6));
+                    else
+                        *(result_buffer_vector[i].data.data() + batch) &= ibf_ptr->data.get_int(idx);
+
+                    idx += 64;
+                }
+            }
+        }
+
+        return result_buffer_vector;
+    }
+    //!\endcond
+
     // `bulk_contains` cannot be called on a temporary, since the object the returned reference points to
     // is immediately destroyed.
     [[nodiscard]] binning_bitvector const & bulk_contains(size_t const value) && noexcept = delete;
+    template <std::ranges::input_range value_range_t>
+    [[nodiscard]] std::vector<binning_bitvector> const & bulk_contains(
+        value_range_t && value_range,size_t const value_range_size) && noexcept = delete;
     //!\}
 
 };
@@ -687,6 +747,12 @@ public:
         data(size)
     {}
     //!\}
+
+    //!\brief Resizes the container.
+    void resize(size_t const size)
+    {
+        return data.resize(size);
+    }
 
     //!\brief Returns the number of elements.
     size_t size() const noexcept
@@ -845,7 +911,8 @@ public:
         // Each iteration can handle 64 bits, so we need to iterate `((rhs.size() + 63) >> 6` many times
         for (size_t batch = 0, bin = 0; batch < ((rhs.size() + 63) >> 6); bin = 64 * ++batch)
         {
-            size_t tmp = rhs.data.get_int(batch * 64); // get 64 bits starting at position `batch * 64`
+            // get 64 bits starting at position `batch * 64`, since this is aligned: `batch >> 6 << 6` = batch
+            size_t tmp = *(rhs.data.data() + batch);
             if (tmp ^ (1ULL<<63)) // This is a special case, because we would shift by 64 (UB) in the while loop.
             {
                 while (tmp > 0)
@@ -965,8 +1032,11 @@ public:
 
         std::ranges::fill(result_buffer, 0);
 
-        for (auto && value : values)
-            result_buffer += membership_agent.bulk_contains(value);
+        // for (auto && value : values)
+        //     result_buffer += membership_agent.bulk_contains(value);
+
+        for (auto && result : membership_agent.bulk_contains(values, std::ranges::distance(values)))
+            result_buffer += result;
 
         return result_buffer;
     }
