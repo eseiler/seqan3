@@ -601,6 +601,7 @@ public:
 
     //!\brief Stores the result of bulk_contains().
     std::vector<binning_bitvector> result_buffer_vector;
+    std::vector<size_t> indices_buffer;
 
     /*!\name Lookup
      * \{
@@ -674,13 +675,16 @@ public:
             std::ranges::for_each(it, result_buffer_vector.end(), resize_vector);
         }
 
-        std::vector<size_t> indices_buffer;
-        indices_buffer.reserve(ibf_ptr->hash_funs * value_range_size);
+        if (indices_buffer.capacity() < value_range_size)
+            indices_buffer.reserve(ibf_ptr->hash_funs * value_range_size);
+
+        indices_buffer.clear();
+
         for (auto && value : value_range)
             for (size_t j = 0; j < ibf_ptr->hash_funs; ++j)
                 indices_buffer.emplace_back(ibf_ptr->hash_and_fit(value, ibf_ptr->hash_seeds[j]));
 
-        assert(indices_buffer.capacity() == indices_buffer.size());
+        assert(indices_buffer.capacity() >= indices_buffer.size());
 
         for (size_t i = 0; i < value_range_size; ++i)
         {
