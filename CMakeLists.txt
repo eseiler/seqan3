@@ -22,10 +22,10 @@ if (CMAKE_VERSION VERSION_LESS 3.12)
              VERSION "${SEQAN3_PROJECT_VERSION}")
 else ()
     project (seqan3
-            LANGUAGES CXX
-                VERSION "${SEQAN3_PROJECT_VERSION}"
-    DESCRIPTION "SeqAn3 -- the modern C++ library for sequence analysis" # since cmake 3.9
-                HOMEPAGE_URL "https://github.com/seqan/seqan3" # since cmake 3.12
+             LANGUAGES CXX
+             VERSION "${SEQAN3_PROJECT_VERSION}"
+             DESCRIPTION "SeqAn3 -- the modern C++ library for sequence analysis" # since cmake 3.9
+             HOMEPAGE_URL "https://github.com/seqan/seqan3" # since cmake 3.12
     )
 endif ()
 
