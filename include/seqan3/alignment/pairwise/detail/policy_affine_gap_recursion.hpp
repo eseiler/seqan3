@@ -68,12 +68,12 @@ protected:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    policy_affine_gap_recursion() = default; //!< Defaulted.
-    policy_affine_gap_recursion(policy_affine_gap_recursion const &) = default; //!< Defaulted.
-    policy_affine_gap_recursion(policy_affine_gap_recursion &&) = default; //!< Defaulted.
+    policy_affine_gap_recursion() = default;                                                //!< Defaulted.
+    policy_affine_gap_recursion(policy_affine_gap_recursion const &) = default;             //!< Defaulted.
+    policy_affine_gap_recursion(policy_affine_gap_recursion &&) = default;                  //!< Defaulted.
     policy_affine_gap_recursion & operator=(policy_affine_gap_recursion const &) = default; //!< Defaulted.
-    policy_affine_gap_recursion & operator=(policy_affine_gap_recursion &&) = default; //!< Defaulted.
-    ~policy_affine_gap_recursion() = default; //!< Defaulted.
+    policy_affine_gap_recursion & operator=(policy_affine_gap_recursion &&) = default;      //!< Defaulted.
+    ~policy_affine_gap_recursion() = default;                                               //!< Defaulted.
 
     /*!\brief Construction and initialisation using the alignment configuration.
      * \param[in] config The alignment configuration.
@@ -87,8 +87,8 @@ protected:
     explicit policy_affine_gap_recursion(alignment_configuration_t const & config)
     {
         // Get the gap scheme from the config or choose -1 and -10 as default.
-        auto const & selected_gap_scheme = config.get_or(align_cfg::gap_cost_affine{align_cfg::open_score{-10},
-                                                                                    align_cfg::extension_score{-1}});
+        auto const & selected_gap_scheme =
+            config.get_or(align_cfg::gap_cost_affine{align_cfg::open_score{-10}, align_cfg::extension_score{-1}});
 
         gap_extension_score = maybe_convert_to_simd(selected_gap_scheme.extension_score);
         gap_open_score = maybe_convert_to_simd(selected_gap_scheme.open_score) + gap_extension_score;

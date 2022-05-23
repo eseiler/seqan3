@@ -31,10 +31,9 @@ namespace seqan3::detail
  */
 //!\cond
 template <typename pairwise_alignment_t>
-concept pairwise_alignment =
-    pair_like<pairwise_alignment_t> &&
-    aligned_sequence<std::tuple_element_t<0, std::remove_reference_t<pairwise_alignment_t>>> &&
-    aligned_sequence<std::tuple_element_t<1, std::remove_reference_t<pairwise_alignment_t>>>;
+concept pairwise_alignment = pair_like<pairwise_alignment_t> &&
+                             aligned_sequence<std::tuple_element_t<0, std::remove_reference_t<pairwise_alignment_t>>> &&
+                             aligned_sequence<std::tuple_element_t<1, std::remove_reference_t<pairwise_alignment_t>>>;
 //!\endcond
 
 /*!\interface seqan3::detail::writable_pairwise_alignment < >

@@ -103,11 +103,11 @@ private:
          */
         //!\brief Deleted, because using this proxy without a parent would be undefined behaviour.
         reference_proxy_type() = delete;
-        constexpr reference_proxy_type(reference_proxy_type const &) noexcept = default; //!< Defaulted.
-        constexpr reference_proxy_type(reference_proxy_type &&) noexcept = default; //!< Defaulted.
+        constexpr reference_proxy_type(reference_proxy_type const &) noexcept = default;             //!< Defaulted.
+        constexpr reference_proxy_type(reference_proxy_type &&) noexcept = default;                  //!< Defaulted.
         constexpr reference_proxy_type & operator=(reference_proxy_type const &) noexcept = default; //!< Defaulted.
-        constexpr reference_proxy_type & operator=(reference_proxy_type &&) noexcept = default; //!< Defaulted.
-        ~reference_proxy_type() noexcept = default; //!< Defaulted.
+        constexpr reference_proxy_type & operator=(reference_proxy_type &&) noexcept = default;      //!< Defaulted.
+        ~reference_proxy_type() noexcept = default;                                                  //!< Defaulted.
 
         //!\brief Initialise from internal proxy type.
         reference_proxy_type(std::ranges::range_reference_t<data_type> const & internal) noexcept :
@@ -134,54 +134,54 @@ public:
      * \details
      * \stableapi{Since version 3.1.}
      */
-    using value_type        = alphabet_type;
+    using value_type = alphabet_type;
     /*!\brief A proxy type (models seqan3::writable_semialphabet) that enables assignment, think of it as
      *        `value_type &`.
      * \details
      * \stableapi{Since version 3.1.}
      */
-    using reference         = reference_proxy_type;
+    using reference = reference_proxy_type;
     /*!\brief Equals the alphabet_type / value_type.
      * \details
      * \stableapi{Since version 3.1.}
      */
-    using const_reference   = alphabet_type;
+    using const_reference = alphabet_type;
     /*!\brief The iterator type of this container (a random access iterator).
      * \details
      * \stableapi{Since version 3.1.}
      */
-    using iterator          = detail::random_access_iterator<bitpacked_sequence>;
+    using iterator = detail::random_access_iterator<bitpacked_sequence>;
     /*!\brief The const_iterator type of this container (a random access iterator).
      * \details
      * \stableapi{Since version 3.1.}
      */
-    using const_iterator    = detail::random_access_iterator<bitpacked_sequence const>;
+    using const_iterator = detail::random_access_iterator<bitpacked_sequence const>;
     /*!\brief A signed integer type (usually std::ptrdiff_t)
      * \details
      * \stableapi{Since version 3.1.}
      */
-    using difference_type   = std::ranges::range_difference_t<data_type>;
+    using difference_type = std::ranges::range_difference_t<data_type>;
     /*!\brief An unsigned integer type (usually std::size_t)
      * \details
      * \stableapi{Since version 3.1.}
      */
-    using size_type         = std::ranges::range_size_t<data_type>;
+    using size_type = std::ranges::range_size_t<data_type>;
     //!\}
 
     //!\cond
     // this signals to range-v3 that something is a container :|
-    using allocator_type    = void;
+    using allocator_type = void;
     //!\endcond
 
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    bitpacked_sequence() = default; //!< Defaulted.
-    constexpr bitpacked_sequence(bitpacked_sequence const &) = default; //!< Defaulted.
-    constexpr bitpacked_sequence(bitpacked_sequence &&) = default; //!< Defaulted.
+    bitpacked_sequence() = default;                                                 //!< Defaulted.
+    constexpr bitpacked_sequence(bitpacked_sequence const &) = default;             //!< Defaulted.
+    constexpr bitpacked_sequence(bitpacked_sequence &&) = default;                  //!< Defaulted.
     constexpr bitpacked_sequence & operator=(bitpacked_sequence const &) = default; //!< Defaulted.
-    constexpr bitpacked_sequence & operator=(bitpacked_sequence &&) = default; //!< Defaulted.
-    ~bitpacked_sequence() = default; //!< Defaulted.
+    constexpr bitpacked_sequence & operator=(bitpacked_sequence &&) = default;      //!< Defaulted.
+    ~bitpacked_sequence() = default;                                                //!< Defaulted.
 
     /*!\brief Construct from a different range.
      * \tparam other_range_t The type of range to construct from; must satisfy std::ranges::input_range and
@@ -200,8 +200,7 @@ public:
      */
     template <typename other_range_t>
         requires (!std::same_as<bitpacked_sequence, std::remove_cvref_t<other_range_t>>) &&
-                 std::ranges::input_range<other_range_t> &&
-                 has_same_value_type_v<other_range_t>
+                 std::ranges::input_range<other_range_t> && has_same_value_type_v<other_range_t>
     explicit bitpacked_sequence(other_range_t && range) :
         bitpacked_sequence{std::ranges::begin(range), std::ranges::end(range)}
     {}
@@ -220,8 +219,7 @@ public:
      *
      * \stableapi{Since version 3.1.}
      */
-    bitpacked_sequence(size_type const count, value_type const value) :
-        data(count, to_rank(value))
+    bitpacked_sequence(size_type const count, value_type const value) : data(count, to_rank(value))
     {}
 
     /*!\brief Construct from pair of iterators.
@@ -262,8 +260,7 @@ public:
      *
      * \stableapi{Since version 3.1.}
      */
-    bitpacked_sequence(std::initializer_list<value_type> ilist) :
-        bitpacked_sequence(std::begin(ilist), std::end(ilist))
+    bitpacked_sequence(std::initializer_list<value_type> ilist) : bitpacked_sequence(std::begin(ilist), std::end(ilist))
     {}
 
     /*!\brief Assign from `std::initializer_list`.
@@ -555,14 +552,14 @@ public:
     reference back() noexcept
     {
         assert(size() > 0);
-        return (*this)[size()-1];
+        return (*this)[size() - 1];
     }
 
     //!\copydoc back()
     const_reference back() const noexcept
     {
         assert(size() > 0);
-        return (*this)[size()-1];
+        return (*this)[size() - 1];
     }
 
     /*!\brief Provides direct, unsafe access to underlying data structures.
@@ -824,9 +821,8 @@ public:
     {
         auto const pos_as_num = std::distance(cbegin(), pos);
 
-        auto v = std::ranges::subrange<begin_iterator_type, end_iterator_type>{begin_it, end_it}
-               | views::convert<value_type>
-               | views::to_rank;
+        auto v = std::ranges::subrange<begin_iterator_type, end_iterator_type>{begin_it, end_it} |
+                 views::convert<value_type> | views::to_rank;
         data.insert(data.begin() + pos_as_num, std::ranges::begin(v), std::ranges::end(v));
 
         return begin() + pos_as_num;
@@ -886,8 +882,7 @@ public:
         auto const begin_it_pos = std::distance(cbegin(), begin_it);
         auto const end_it_pos = std::distance(cbegin(), end_it);
 
-        data.erase(data.cbegin() + begin_it_pos,
-                   data.cbegin() + end_it_pos);
+        data.erase(data.cbegin() + begin_it_pos, data.cbegin() + end_it_pos);
 
         return begin() + begin_it_pos;
     }
@@ -915,7 +910,7 @@ public:
      */
     iterator erase(const_iterator pos)
     {
-       return erase(pos, pos + 1);
+        return erase(pos, pos + 1);
     }
 
     /*!\brief Appends the given element value to the end of the container.

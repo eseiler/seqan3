@@ -62,12 +62,12 @@ public:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    combined_score_and_trace_matrix() = default; //!< Defaulted.
-    combined_score_and_trace_matrix(combined_score_and_trace_matrix const &) = default; //!< Defaulted.
-    combined_score_and_trace_matrix(combined_score_and_trace_matrix &&) = default; //!< Defaulted.
+    combined_score_and_trace_matrix() = default;                                                    //!< Defaulted.
+    combined_score_and_trace_matrix(combined_score_and_trace_matrix const &) = default;             //!< Defaulted.
+    combined_score_and_trace_matrix(combined_score_and_trace_matrix &&) = default;                  //!< Defaulted.
     combined_score_and_trace_matrix & operator=(combined_score_and_trace_matrix const &) = default; //!< Defaulted.
-    combined_score_and_trace_matrix & operator=(combined_score_and_trace_matrix &&) = default; //!< Defaulted.
-    ~combined_score_and_trace_matrix() = default; //!< Defaulted.
+    combined_score_and_trace_matrix & operator=(combined_score_and_trace_matrix &&) = default;      //!< Defaulted.
+    ~combined_score_and_trace_matrix() = default;                                                   //!< Defaulted.
 
     //!\}
 
@@ -168,8 +168,8 @@ private:
     static_assert(std::ranges::viewable_range<trace_matrix_reference_type>);
 
     //!\brief The combined column type.
-    using combined_column_type = decltype(views::zip(std::declval<score_matrix_reference_type>(),
-                                                     std::declval<trace_matrix_reference_type>()));
+    using combined_column_type =
+        decltype(views::zip(std::declval<score_matrix_reference_type>(), std::declval<trace_matrix_reference_type>()));
     //!\brief The type of the score matrix iterator.
     using score_matrix_iter_type = std::ranges::iterator_t<score_matrix_t>;
     //!\brief The type of the trace matrix iterator.
@@ -182,12 +182,12 @@ private:
     friend class combined_score_and_trace_matrix;
 
     //!\brief The transform adaptor to convert the tuple from the zip view into a seqan3::detail::affine_cell_type.
-    static constexpr auto transform_to_combined_matrix_cell = std::views::transform([] (auto && tpl)
-        -> affine_cell_proxy<std::remove_cvref_t<decltype(tpl)>>
-    {
-        using fwd_tuple_t = decltype(tpl);
-        return affine_cell_proxy<std::remove_cvref_t<fwd_tuple_t>>{std::forward<fwd_tuple_t>(tpl)};
-    });
+    static constexpr auto transform_to_combined_matrix_cell = std::views::transform(
+        [](auto && tpl) -> affine_cell_proxy<std::remove_cvref_t<decltype(tpl)>>
+        {
+            using fwd_tuple_t = decltype(tpl);
+            return affine_cell_proxy<std::remove_cvref_t<fwd_tuple_t>>{std::forward<fwd_tuple_t>(tpl)};
+        });
 
     //!\brief The current iterator over the score matrix.
     score_matrix_iter_type score_matrix_it;
@@ -213,20 +213,19 @@ public:
     /*!\name Constructor, assignment and destructor
      * \{
      */
-    iterator() = default; //!< Defaulted.
-    iterator(iterator const &) = default; //!< Defaulted.
-    iterator(iterator &&) = default; //!< Defaulted.
+    iterator() = default;                             //!< Defaulted.
+    iterator(iterator const &) = default;             //!< Defaulted.
+    iterator(iterator &&) = default;                  //!< Defaulted.
     iterator & operator=(iterator const &) = default; //!< Defaulted.
-    iterator & operator=(iterator &&) = default; //!< Defaulted.
-    ~iterator() = default; //!< Defaulted.
+    iterator & operator=(iterator &&) = default;      //!< Defaulted.
+    ~iterator() = default;                            //!< Defaulted.
 
     /*!\brief Initialises the iterator from the underlying matrix.
      *
      * \param[in] score_matrix_it \copybrief seqan3::detail::combined_score_and_trace_matrix::iterator::score_matrix_it
      * \param[in] trace_matrix_it \copybrief seqan3::detail::combined_score_and_trace_matrix::iterator::trace_matrix_it
      */
-    explicit iterator(score_matrix_iter_type score_matrix_it,
-                      trace_matrix_iter_type trace_matrix_it) noexcept :
+    explicit iterator(score_matrix_iter_type score_matrix_it, trace_matrix_iter_type trace_matrix_it) noexcept :
         score_matrix_it{std::move(score_matrix_it)},
         trace_matrix_it{std::move(trace_matrix_it)}
     {}
@@ -284,12 +283,12 @@ public:
     /*!\name Constructor, assignment and destructor
      * \{
      */
-    sentinel() = default; //!< Defaulted.
-    sentinel(sentinel const &) = default; //!< Defaulted.
-    sentinel(sentinel &&) = default; //!< Defaulted.
+    sentinel() = default;                             //!< Defaulted.
+    sentinel(sentinel const &) = default;             //!< Defaulted.
+    sentinel(sentinel &&) = default;                  //!< Defaulted.
     sentinel & operator=(sentinel const &) = default; //!< Defaulted.
-    sentinel & operator=(sentinel &&) = default; //!< Defaulted.
-    ~sentinel() = default; //!< Defaulted.
+    sentinel & operator=(sentinel &&) = default;      //!< Defaulted.
+    ~sentinel() = default;                            //!< Defaulted.
 
     /*!\brief Initialises the sentinel from the underlying matrix.
      *

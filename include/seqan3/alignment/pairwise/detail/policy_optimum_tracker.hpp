@@ -140,9 +140,9 @@ public:
                     score_t current_score,
                     coordinate_t current_coordinate) const noexcept
     {
-        bool const is_better_score = (target_row_index == current_coordinate.row ||
-                                      target_col_index == current_coordinate.col) &&
-                                      (current_score >= optimal_score);
+        bool const is_better_score =
+            (target_row_index == current_coordinate.row || target_col_index == current_coordinate.col) &&
+            (current_score >= optimal_score);
         optimal_score = (is_better_score) ? std::move(current_score) : optimal_score;
         optimal_coordinate = (is_better_score) ? std::move(current_coordinate) : optimal_coordinate;
     }
@@ -179,11 +179,12 @@ public:
  */
 template <typename alignment_configuration_t, std::semiregular optimum_updater_t>
     requires is_type_specialisation_of_v<alignment_configuration_t, configuration> &&
-             std::invocable<optimum_updater_t,
-                            typename alignment_configuration_traits<alignment_configuration_t>::score_type &,
-                            typename alignment_configuration_traits<alignment_configuration_t>::matrix_coordinate_type &,
-                            typename alignment_configuration_traits<alignment_configuration_t>::score_type,
-                            typename alignment_configuration_traits<alignment_configuration_t>::matrix_coordinate_type>
+             std::invocable<
+                 optimum_updater_t,
+                 typename alignment_configuration_traits<alignment_configuration_t>::score_type &,
+                 typename alignment_configuration_traits<alignment_configuration_t>::matrix_coordinate_type &,
+                 typename alignment_configuration_traits<alignment_configuration_t>::score_type,
+                 typename alignment_configuration_traits<alignment_configuration_t>::matrix_coordinate_type>
 class policy_optimum_tracker
 {
 protected:
@@ -211,12 +212,12 @@ protected:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    policy_optimum_tracker() = default; //!< Defaulted.
-    policy_optimum_tracker(policy_optimum_tracker const &) = default; //!< Defaulted.
-    policy_optimum_tracker(policy_optimum_tracker &&) = default; //!< Defaulted.
+    policy_optimum_tracker() = default;                                           //!< Defaulted.
+    policy_optimum_tracker(policy_optimum_tracker const &) = default;             //!< Defaulted.
+    policy_optimum_tracker(policy_optimum_tracker &&) = default;                  //!< Defaulted.
     policy_optimum_tracker & operator=(policy_optimum_tracker const &) = default; //!< Defaulted.
-    policy_optimum_tracker & operator=(policy_optimum_tracker &&) = default; //!< Defaulted.
-    ~policy_optimum_tracker() = default; //!< Defaulted.
+    policy_optimum_tracker & operator=(policy_optimum_tracker &&) = default;      //!< Defaulted.
+    ~policy_optimum_tracker() = default;                                          //!< Defaulted.
 
     /*!\brief Construction and initialisation using the alignment configuration.
      * \param[in] config The alignment configuration (not used in this context).

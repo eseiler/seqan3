@@ -24,20 +24,26 @@ namespace seqan3::detail
 {
 //!\brief std::variant of allowed types for optional tag fields of the SAM format.
 //!\ingroup io_sam_file
-using sam_tag_variant = std::variant<char, int32_t, float, std::string,
+using sam_tag_variant = std::variant<char,
+                                     int32_t,
+                                     float,
+                                     std::string,
                                      std::vector<std::byte>,
-                                     std::vector<int8_t>, std::vector<uint8_t>,
-                                     std::vector<int16_t>, std::vector<uint16_t>,
-                                     std::vector<int32_t>, std::vector<uint32_t>,
+                                     std::vector<int8_t>,
+                                     std::vector<uint8_t>,
+                                     std::vector<int16_t>,
+                                     std::vector<uint16_t>,
+                                     std::vector<int32_t>,
+                                     std::vector<uint32_t>,
                                      std::vector<float>>;
 
 //!\brief Each SAM tag type char identifier. Index corresponds to the seqan3::detail::sam_tag_variant types.
 //!\ingroup io_sam_file
-char constexpr sam_tag_type_char[12]       = {'A',  'i',  'f',  'Z', 'H', 'B', 'B', 'B', 'B', 'B', 'B', 'B'};
+constexpr char sam_tag_type_char[12] = {'A', 'i', 'f', 'Z', 'H', 'B', 'B', 'B', 'B', 'B', 'B', 'B'};
 //!\brief Each types SAM tag type extra char id. Index corresponds to the seqan3::detail::sam_tag_variant types.
 //!\ingroup io_sam_file
-char constexpr sam_tag_type_char_extra[12] = {'\0', '\0', '\0', '\0', '\0', 'c', 'C', 's', 'S', 'i', 'I', 'f'};
-}
+constexpr char sam_tag_type_char_extra[12] = {'\0', '\0', '\0', '\0', '\0', 'c', 'C', 's', 'S', 'i', 'I', 'f'};
+} // namespace seqan3::detail
 
 namespace seqan3
 {
@@ -70,29 +76,28 @@ template <small_string<2> str> // TODO: better handling if too large string is p
 constexpr uint16_t operator""_tag()
 {
 #else // GCC/Clang extension
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-template <typename char_t, char_t ...s>
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wpedantic"
+template <typename char_t, char_t... s>
 constexpr uint16_t operator""_tag()
 {
     static_assert(std::same_as<char_t, char>, "Illegal SAM tag: Type must be char.");
     constexpr small_string<sizeof...(s)> str{std::array<char, sizeof...(s)>{s...}};
-#pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
 
     static_assert(str.size() == 2, "Illegal SAM tag: Exactly two characters must be given.");
 
-    char constexpr char0 = str[0];
-    char constexpr char1 = str[1];
+    constexpr char char0 = str[0];
+    constexpr char char1 = str[1];
 
-    static_assert((is_alpha(char0) && is_alnum(char1)),
-                  "Illegal SAM tag: a SAM tag must match /[A-Za-z][A-Za-z0-9]/.");
+    static_assert((is_alpha(char0) && is_alnum(char1)), "Illegal SAM tag: a SAM tag must match /[A-Za-z][A-Za-z0-9]/.");
 
     return static_cast<uint16_t>(char0) * 256 + static_cast<uint16_t>(char1);
 }
 //!\}
 
-} // inline namespace literals
+} // namespace literals
 
 /*!\brief The generic base class.
  * \ingroup io_sam_file
@@ -184,72 +189,280 @@ template <uint16_t tag_value>
 using sam_tag_type_t = typename sam_tag_type<tag_value>::type;
 
 //!\cond
-template <> struct sam_tag_type<"AM"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"AS"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"BC"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"BQ"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"BZ"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"CB"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"CC"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"CG"_tag> { using type = std::vector<int32_t>; };
-template <> struct sam_tag_type<"CM"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"CO"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"CP"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"CQ"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"CR"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"CS"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"CT"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"CY"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"E2"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"FI"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"FS"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"FZ"_tag> { using type = std::vector<uint16_t>; };
+template <>
+struct sam_tag_type<"AM"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"AS"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"BC"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"BQ"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"BZ"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"CB"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"CC"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"CG"_tag>
+{
+    using type = std::vector<int32_t>;
+};
+template <>
+struct sam_tag_type<"CM"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"CO"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"CP"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"CQ"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"CR"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"CS"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"CT"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"CY"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"E2"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"FI"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"FS"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"FZ"_tag>
+{
+    using type = std::vector<uint16_t>;
+};
 
 // template <> struct sam_tag_type<"GC"_tag> {};
 // template <> struct sam_tag_type<"GQ"_tag> {};
 // template <> struct sam_tag_type<"GS"_tag> {};
 
-template <> struct sam_tag_type<"H0"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"H1"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"H2"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"HI"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"IH"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"LB"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"MC"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"MD"_tag> { using type = std::string; };
+template <>
+struct sam_tag_type<"H0"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"H1"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"H2"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"HI"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"IH"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"LB"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"MC"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"MD"_tag>
+{
+    using type = std::string;
+};
 
 // template <> struct sam_tag_type<"MF"_tag> {};
 
-template <> struct sam_tag_type<"MI"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"MQ"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"NH"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"NM"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"OC"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"OP"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"OQ"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"OX"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"PG"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"PQ"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"PT"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"PU"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"Q2"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"QT"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"QX"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"R2"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"RG"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"RT"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"RX"_tag> { using type = std::string; };
+template <>
+struct sam_tag_type<"MI"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"MQ"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"NH"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"NM"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"OC"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"OP"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"OQ"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"OX"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"PG"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"PQ"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"PT"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"PU"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"Q2"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"QT"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"QX"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"R2"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"RG"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"RT"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"RX"_tag>
+{
+    using type = std::string;
+};
 
 // template <> struct sam_tag_type<"S2"_tag> {};
 
-template <> struct sam_tag_type<"SA"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"SM"_tag> { using type = int32_t; };
+template <>
+struct sam_tag_type<"SA"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"SM"_tag>
+{
+    using type = int32_t;
+};
 
 // template <> struct sam_tag_type<"SQ"_tag> {};
 
-template <> struct sam_tag_type<"TC"_tag> { using type = int32_t; };
-template <> struct sam_tag_type<"U2"_tag> { using type = std::string; };
-template <> struct sam_tag_type<"UQ"_tag> { using type = int32_t; };
+template <>
+struct sam_tag_type<"TC"_tag>
+{
+    using type = int32_t;
+};
+template <>
+struct sam_tag_type<"U2"_tag>
+{
+    using type = std::string;
+};
+template <>
+struct sam_tag_type<"UQ"_tag>
+{
+    using type = int32_t;
+};
 //!\endcond
 
 /*!\brief The SAM tag dictionary class that stores all optional SAM fields.

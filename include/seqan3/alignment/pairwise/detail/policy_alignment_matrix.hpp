@@ -39,9 +39,10 @@ namespace seqan3::detail
  */
 template <typename traits_t, typename alignment_matrix_t>
     requires (is_type_specialisation_of_v<traits_t, alignment_configuration_traits> &&
-              requires (alignment_matrix_t & matrix, typename traits_t::score_type const initial_score)
-              {
-                  { matrix.resize(column_index_type{size_t{}}, row_index_type{size_t{}}, initial_score) };
+              requires (alignment_matrix_t & matrix, typename traits_t::score_type const initial_score) {
+                  {
+                      matrix.resize(column_index_type{size_t{}}, row_index_type{size_t{}}, initial_score)
+                  };
               })
 class policy_alignment_matrix
 {
@@ -63,12 +64,12 @@ protected:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    policy_alignment_matrix() = default; //!< Defaulted.
-    policy_alignment_matrix(policy_alignment_matrix const &) = default; //!< Defaulted.
-    policy_alignment_matrix(policy_alignment_matrix &&) = default; //!< Defaulted.
+    policy_alignment_matrix() = default;                                            //!< Defaulted.
+    policy_alignment_matrix(policy_alignment_matrix const &) = default;             //!< Defaulted.
+    policy_alignment_matrix(policy_alignment_matrix &&) = default;                  //!< Defaulted.
     policy_alignment_matrix & operator=(policy_alignment_matrix const &) = default; //!< Defaulted.
-    policy_alignment_matrix & operator=(policy_alignment_matrix &&) = default; //!< Defaulted.
-    ~policy_alignment_matrix() = default; //!< Defaulted.
+    policy_alignment_matrix & operator=(policy_alignment_matrix &&) = default;      //!< Defaulted.
+    ~policy_alignment_matrix() = default;                                           //!< Defaulted.
 
     /*!\brief Constructs and initialises the algorithm using the alignment configuration.
      * \tparam alignment_configuration_t The type of the alignment configuration; must be an instance of
@@ -113,8 +114,10 @@ protected:
 
         if (invalid_band)
             throw invalid_alignment_configuration{"The selected band [" + std::to_string(lower_diagonal) + ":" +
-                                                  std::to_string(upper_diagonal) + "] cannot be used with the current "
-                                                  "alignment configuration:" + error_cause};
+                                                  std::to_string(upper_diagonal) +
+                                                  "] cannot be used with the current "
+                                                  "alignment configuration:" +
+                                                  error_cause};
     }
     //!\}
 
@@ -197,8 +200,10 @@ protected:
 
         if (invalid_band)
             throw invalid_alignment_configuration{"The selected band [" + std::to_string(lower_diagonal) + ":" +
-                                                  std::to_string(upper_diagonal) + "] cannot be used with the current "
-                                                  "alignment configuration: " + error_cause};
+                                                  std::to_string(upper_diagonal) +
+                                                  "] cannot be used with the current "
+                                                  "alignment configuration: " +
+                                                  error_cause};
     }
 };
 } // namespace seqan3::detail

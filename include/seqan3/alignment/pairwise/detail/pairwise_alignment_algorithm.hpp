@@ -41,7 +41,7 @@ namespace seqan3::detail
  * The algorithm computes a column based dynamic programming matrix given two sequences.
  * After the computation a user defined callback function is invoked with the computed seqan3::alignment_result.
  */
-template <typename alignment_configuration_t, typename ...policies_t>
+template <typename alignment_configuration_t, typename... policies_t>
     requires is_type_specialisation_of_v<alignment_configuration_t, configuration>
 class pairwise_alignment_algorithm : protected policies_t...
 {
@@ -59,12 +59,12 @@ public:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    pairwise_alignment_algorithm() = default; //!< Defaulted.
-    pairwise_alignment_algorithm(pairwise_alignment_algorithm const &) = default; //!< Defaulted.
-    pairwise_alignment_algorithm(pairwise_alignment_algorithm &&) = default; //!< Defaulted.
+    pairwise_alignment_algorithm() = default;                                                 //!< Defaulted.
+    pairwise_alignment_algorithm(pairwise_alignment_algorithm const &) = default;             //!< Defaulted.
+    pairwise_alignment_algorithm(pairwise_alignment_algorithm &&) = default;                  //!< Defaulted.
     pairwise_alignment_algorithm & operator=(pairwise_alignment_algorithm const &) = default; //!< Defaulted.
-    pairwise_alignment_algorithm & operator=(pairwise_alignment_algorithm &&) = default; //!< Defaulted.
-    ~pairwise_alignment_algorithm() = default; //!< Defaulted.
+    pairwise_alignment_algorithm & operator=(pairwise_alignment_algorithm &&) = default;      //!< Defaulted.
+    ~pairwise_alignment_algorithm() = default;                                                //!< Defaulted.
 
     /*!\brief Constructs and initialises the algorithm using the alignment configuration.
      * \param config The configuration passed into the algorithm.
@@ -215,9 +215,7 @@ protected:
      * the collection. For all sequences with a smaller size the padding symbol will be appended during the simd
      * transformation to fill up the remaining size difference.
      */
-    template <typename simd_sequence_t,
-              std::ranges::forward_range sequence_collection_t,
-              arithmetic padding_symbol_t>
+    template <typename simd_sequence_t, std::ranges::forward_range sequence_collection_t, arithmetic padding_symbol_t>
         requires std::ranges::output_range<simd_sequence_t, score_type>
     void convert_batch_of_sequences_to_simd_vector(simd_sequence_t & simd_sequence,
                                                    sequence_collection_t & sequences,
@@ -333,8 +331,8 @@ protected:
         for ([[maybe_unused]] auto const & unused : sequence2)
         {
             ++first_column_it;
-            *first_column_it = this->track_cell(this->initialise_first_column_cell(*first_column_it),
-                                                *++cell_index_column_it);
+            *first_column_it =
+                this->track_cell(this->initialise_first_column_cell(*first_column_it), *++cell_index_column_it);
         }
 
         // ---------------------------------------------------------------------

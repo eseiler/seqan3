@@ -40,7 +40,7 @@ enum class error_type : uint8_t
  * \tparam configuration_t The search configuration type.
  * \tparam index_t The type of index.
  */
-template <typename configuration_t, typename index_t, typename ...policies_t>
+template <typename configuration_t, typename index_t, typename... policies_t>
 class unidirectional_search_algorithm : protected policies_t...
 {
 private:
@@ -55,12 +55,12 @@ public:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    unidirectional_search_algorithm() = default; //!< Defaulted.
-    unidirectional_search_algorithm(unidirectional_search_algorithm const &) = default; //!< Defaulted.
-    unidirectional_search_algorithm(unidirectional_search_algorithm &&) = default; //!< Defaulted.
+    unidirectional_search_algorithm() = default;                                                    //!< Defaulted.
+    unidirectional_search_algorithm(unidirectional_search_algorithm const &) = default;             //!< Defaulted.
+    unidirectional_search_algorithm(unidirectional_search_algorithm &&) = default;                  //!< Defaulted.
     unidirectional_search_algorithm & operator=(unidirectional_search_algorithm const &) = default; //!< Defaulted.
-    unidirectional_search_algorithm & operator=(unidirectional_search_algorithm &&) = default; //!< Defaulted.
-    ~unidirectional_search_algorithm() = default; //!< Defaulted.
+    unidirectional_search_algorithm & operator=(unidirectional_search_algorithm &&) = default;      //!< Defaulted.
+    ~unidirectional_search_algorithm() = default;                                                   //!< Defaulted.
 
     /*!\brief Constructs from a configuration object and an index.
      * \tparam configuration_t The search configuration type.
@@ -110,10 +110,7 @@ public:
 
         // construct internal delegate for collecting hits for later filtering (if necessary)
         std::vector<typename index_t::cursor_type> internal_hits{};
-        delegate = [&internal_hits] (auto const & it)
-        {
-            internal_hits.push_back(it);
-        };
+        delegate = [&internal_hits](auto const & it) { internal_hits.push_back(it); };
 
         perform_search_by_hit_strategy(internal_hits, query, error_state);
 
@@ -205,7 +202,7 @@ private:
  *
  * No-throw guarantee if invoking the delegate also guarantees no-throw.
  */
-template <typename configuration_t, typename index_t, typename ...policies_t>
+template <typename configuration_t, typename index_t, typename... policies_t>
 template <bool abort_on_hit, typename query_t>
 inline bool unidirectional_search_algorithm<configuration_t, index_t, policies_t...>::search_trivial(
     typename index_t::cursor_type cur,
@@ -231,7 +228,8 @@ inline bool unidirectional_search_algorithm<configuration_t, index_t, policies_t
     {
         // Insertion
         // Only allow insertions if there is no match and we are not at the beginning of the query.
-        bool const allow_insertion = (cur.query_length() > 0) ? cur.last_rank() != seqan3::to_rank(query[query_pos]) : true;
+        bool const allow_insertion =
+            (cur.query_length() > 0) ? cur.last_rank() != seqan3::to_rank(query[query_pos]) : true;
 
         if (allow_insertion && (prev_error != error_type::deletion || error_left.substitution == 0) &&
             error_left.insertion > 0)
@@ -242,10 +240,7 @@ inline bool unidirectional_search_algorithm<configuration_t, index_t, policies_t
 
             // Always perform a recursive call. Abort recursion if and only if recursive call found a hit and
             // abort_on_hit is set to true.
-            if (search_trivial<abort_on_hit>(cur,
-                                             query, query_pos + 1,
-                                             error_left2,
-                                             error_type::insertion) &&
+            if (search_trivial<abort_on_hit>(cur, query, query_pos + 1, error_left2, error_type::insertion) &&
                 abort_on_hit)
             {
                 return true;
@@ -265,11 +260,7 @@ inline bool unidirectional_search_algorithm<configuration_t, index_t, policies_t
                     error_left2.total -= delta;
                     error_left2.substitution -= delta;
 
-                    if (search_trivial<abort_on_hit>(cur,
-                                                     query,
-                                                     query_pos + 1,
-                                                     error_left2,
-                                                     error_type::matchmm) &&
+                    if (search_trivial<abort_on_hit>(cur, query, query_pos + 1, error_left2, error_type::matchmm) &&
                         abort_on_hit)
                     {
                         return true;
@@ -282,11 +273,7 @@ inline bool unidirectional_search_algorithm<configuration_t, index_t, policies_t
                     // Match (when error_left.substitution == 0)
                     if (error_left.substitution == 0 && cur.last_rank() == seqan3::to_rank(query[query_pos]))
                     {
-                        if (search_trivial<abort_on_hit>(cur,
-                                                         query,
-                                                         query_pos + 1,
-                                                         error_left,
-                                                         error_type::matchmm) &&
+                        if (search_trivial<abort_on_hit>(cur, query, query_pos + 1, error_left, error_type::matchmm) &&
                             abort_on_hit)
                         {
                             return true;
@@ -319,18 +306,15 @@ inline bool unidirectional_search_algorithm<configuration_t, index_t, policies_t
                         }
                     }
                 }
-            } while (cur.cycle_back());
+            }
+            while (cur.cycle_back());
         }
         else
         {
             // Match (when error_left.substitution == 0)
             if (cur.extend_right(query[query_pos]))
             {
-                if (search_trivial<abort_on_hit>(cur,
-                                                 query,
-                                                 query_pos + 1,
-                                                 error_left,
-                                                 error_type::matchmm) &&
+                if (search_trivial<abort_on_hit>(cur, query, query_pos + 1, error_left, error_type::matchmm) &&
                     abort_on_hit)
                 {
                     return true;
