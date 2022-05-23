@@ -6,10 +6,11 @@
 // -----------------------------------------------------------------------------------------------------
 
 //! [dna2]
-#include <array>                                         // std::array
-#include <seqan3/alphabet/alphabet_base.hpp>             // alphabet_base
-#include <seqan3/alphabet/concept.hpp>                   // alphabet concept checks
-#include <seqan3/utility/char_operations/transform.hpp>  // seqan3::to_lower
+#include <array> // std::array
+
+#include <seqan3/alphabet/alphabet_base.hpp>            // alphabet_base
+#include <seqan3/alphabet/concept.hpp>                  // alphabet concept checks
+#include <seqan3/utility/char_operations/transform.hpp> // seqan3::to_lower
 
 // derive from alphabet_base
 struct dna2 : public seqan3::alphabet_base<dna2, 2>
@@ -40,22 +41,21 @@ private:
     // === lookup-table implementation detail ===
 
     // map 0 => 'S' and 1 => 'W'
-    static constexpr char_type rank_to_char_table[alphabet_size] {'S', 'W'};
+    static constexpr char_type rank_to_char_table[alphabet_size]{'S', 'W'};
 
-    static constexpr std::array<rank_type, 256> char_to_rank_table
-    {
+    static constexpr std::array<rank_type, 256> char_to_rank_table{
         // initialise with an immediately evaluated lambda expression:
-        [] () constexpr
-        {
-            std::array<rank_type, 256> ret{}; // initialise all values with 0 (=> 'S')
-            ret['W'] = 1;                     // only 'W' and 'w' result in rank 1
-            ret['w'] = 1;
-            return ret;
-        } ()
-    };
-};
+        []() constexpr {std::array<rank_type, 256> ret{}; // initialise all values with 0 (=> 'S')
+    ret['W'] = 1;                                         // only 'W' and 'w' result in rank 1
+    ret['w'] = 1;
+    return ret;
+}()
+}
+;
+}
+;
 
 // check the concepts
-static_assert(seqan3::alphabet<dna2>);                   // ok
-static_assert(seqan3::writable_alphabet<dna2>);           // ok
+static_assert(seqan3::alphabet<dna2>);          // ok
+static_assert(seqan3::writable_alphabet<dna2>); // ok
 //! [dna2]
