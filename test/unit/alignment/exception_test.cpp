@@ -12,10 +12,7 @@
 TEST(alignment_exception, invalid_alignment_configuration)
 {
 
-    auto throw_lambda = []()
-    {
-        throw seqan3::invalid_alignment_configuration{"test"};
-    };
+    auto throw_lambda = []() { throw seqan3::invalid_alignment_configuration{"test"}; };
 
     EXPECT_THROW(throw_lambda(), seqan3::invalid_alignment_configuration);
 

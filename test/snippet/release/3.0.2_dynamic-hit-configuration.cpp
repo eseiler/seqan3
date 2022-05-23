@@ -2,8 +2,8 @@
 
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
 #include <seqan3/core/debug_stream.hpp>
-#include <seqan3/search/configuration/max_error.hpp>
 #include <seqan3/search/configuration/hit.hpp>
+#include <seqan3/search/configuration/max_error.hpp>
 #include <seqan3/search/fm_index/fm_index.hpp>
 #include <seqan3/search/search.hpp>
 

@@ -1,8 +1,8 @@
+#include <filesystem>
 #include <sstream>
 
 #include <seqan3/io/sequence_file/input.hpp>
 #include <seqan3/io/sequence_file/output.hpp>
-#include <filesystem>
 
 auto input = R"(@TEST1
 ACGT
@@ -29,6 +29,6 @@ int main()
     fout = fin;
 
     // or in pipe notation:
-    seqan3::sequence_file_input{std::istringstream{input}, seqan3::format_fastq{}}
-        | seqan3::sequence_file_output{std::ostringstream{}, seqan3::format_fasta{}};
+    seqan3::sequence_file_input{std::istringstream{input}, seqan3::format_fastq{}} |
+        seqan3::sequence_file_output{std::ostringstream{}, seqan3::format_fasta{}};
 }

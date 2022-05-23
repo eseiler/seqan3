@@ -22,10 +22,8 @@ template <typename t>
 class pairwise_combine_base_test : public ::testing::Test
 {
 public:
-
-    using view_t       = decltype(seqan3::detail::pairwise_combine_view{std::views::all(std::declval<t &>())});
-    using const_view_t = decltype(seqan3::detail::pairwise_combine_view{
-                                    std::views::all(std::declval<t const &>())});
+    using view_t = decltype(seqan3::detail::pairwise_combine_view{std::views::all(std::declval<t &>())});
+    using const_view_t = decltype(seqan3::detail::pairwise_combine_view{std::views::all(std::declval<t const &>())});
 
     auto create_view()
     {
@@ -43,7 +41,6 @@ public:
     }
 
 protected:
-
     void SetUp() override
     {
         if constexpr (seqan3::detail::is_type_specialisation_of_v<t, std::forward_list>)
@@ -132,13 +129,13 @@ TYPED_TEST(pairwise_combine_iterator_test, construction)
 TYPED_TEST(pairwise_combine_iterator_test, associated_types)
 {
     // The iterator over the view over the non-const range
-    using v_iter_t        = std::ranges::iterator_t<typename TestFixture::view_t>;
+    using v_iter_t = std::ranges::iterator_t<typename TestFixture::view_t>;
     // The iterator over the view over the const range
-    using v_const_iter_t  = std::ranges::iterator_t<typename TestFixture::const_view_t>;
+    using v_const_iter_t = std::ranges::iterator_t<typename TestFixture::const_view_t>;
     // The non-const range iterator
-    using u_iter_t        = std::ranges::iterator_t<TypeParam>;
+    using u_iter_t = std::ranges::iterator_t<TypeParam>;
     // The const range iterator
-    using u_const_iter_t  = std::ranges::iterator_t<TypeParam const>;
+    using u_const_iter_t = std::ranges::iterator_t<TypeParam const>;
 
     { // non-const view over non-const range
         using u_ref_t = typename std::iterator_traits<u_iter_t>::reference;
@@ -154,20 +151,20 @@ TYPED_TEST(pairwise_combine_iterator_test, associated_types)
 
     { // const view over non-const range
         using u_ref_t = typename std::iterator_traits<u_iter_t>::reference;
-        EXPECT_TRUE((std::is_same_v<typename std::iterator_traits<const v_iter_t>::reference,
+        EXPECT_TRUE((std::is_same_v<typename std::iterator_traits<v_iter_t const>::reference,
                                     seqan3::common_tuple<u_ref_t, u_ref_t>>));
     }
 
     { // const view over const range
         using u_ref_t = typename std::iterator_traits<u_const_iter_t>::reference;
-        EXPECT_TRUE((std::is_same_v<typename std::iterator_traits<const v_const_iter_t>::reference,
+        EXPECT_TRUE((std::is_same_v<typename std::iterator_traits<v_const_iter_t const>::reference,
                                     seqan3::common_tuple<u_ref_t, u_ref_t>>));
     }
 
     { // value type
         using u_val_t = typename std::iterator_traits<u_iter_t>::value_type;
-        EXPECT_TRUE((std::is_same_v<typename std::iterator_traits<v_iter_t>::value_type,
-                                    std::tuple<u_val_t, u_val_t>>));
+        EXPECT_TRUE(
+            (std::is_same_v<typename std::iterator_traits<v_iter_t>::value_type, std::tuple<u_val_t, u_val_t>>));
     }
 }
 
@@ -355,7 +352,8 @@ TYPED_TEST(pairwise_combine_test, view_concept)
     EXPECT_EQ(std::ranges::bidirectional_range<TypeParam>,
               std::ranges::bidirectional_range<typename TestFixture::view_t>);
     EXPECT_EQ(std::ranges::sized_range<TypeParam>, std::ranges::sized_range<typename TestFixture::view_t>);
-    EXPECT_EQ(std::ranges::random_access_range<TypeParam>, std::ranges::random_access_range<typename TestFixture::view_t>);
+    EXPECT_EQ(std::ranges::random_access_range<TypeParam>,
+              std::ranges::random_access_range<typename TestFixture::view_t>);
 
     EXPECT_TRUE(std::ranges::input_range<typename TestFixture::const_view_t>);
     EXPECT_TRUE(std::ranges::forward_range<typename TestFixture::const_view_t>);
@@ -365,7 +363,8 @@ TYPED_TEST(pairwise_combine_test, view_concept)
     EXPECT_EQ(std::ranges::bidirectional_range<TypeParam>,
               std::ranges::bidirectional_range<typename TestFixture::const_view_t>);
     EXPECT_EQ(std::ranges::sized_range<TypeParam>, std::ranges::sized_range<typename TestFixture::const_view_t>);
-    EXPECT_EQ(std::ranges::random_access_range<TypeParam>, std::ranges::random_access_range<typename TestFixture::const_view_t>);
+    EXPECT_EQ(std::ranges::random_access_range<TypeParam>,
+              std::ranges::random_access_range<typename TestFixture::const_view_t>);
 }
 
 TYPED_TEST(pairwise_combine_test, basic_construction)
@@ -373,8 +372,7 @@ TYPED_TEST(pairwise_combine_test, basic_construction)
     using view_t = typename TestFixture::view_t;
 
     // the underlying range wrapped in std::views::all
-    EXPECT_EQ(std::is_default_constructible_v<view_t>,
-              std::is_default_constructible_v<std::views::all_t<TypeParam &>>);
+    EXPECT_EQ(std::is_default_constructible_v<view_t>, std::is_default_constructible_v<std::views::all_t<TypeParam &>>);
     EXPECT_TRUE(std::is_copy_constructible_v<view_t>);
     EXPECT_TRUE(std::is_move_constructible_v<view_t>);
     EXPECT_TRUE(std::is_copy_assignable_v<view_t>);
@@ -457,10 +455,8 @@ TEST(pairwise_combine_fn_test, filter_output)
     using ref_t = std::iter_reference_t<std::ranges::iterator_t<decltype(v)>>;
     std::vector<ref_t> cmp;
 
-    auto v_filter = v | std::views::filter([](auto tpl)
-                        {
-                            return !((std::get<0>(tpl) == 'x') || (std::get<1>(tpl) == 'x'));
-                        });
+    auto v_filter =
+        v | std::views::filter([](auto tpl) { return !((std::get<0>(tpl) == 'x') || (std::get<1>(tpl) == 'x')); });
 
     for (auto r : v_filter)
         cmp.push_back(r);
@@ -504,7 +500,7 @@ TEST(pairwise_combine_fn_test, output)
     *v.begin() = std::tuple{'x', 'y'};
 
     auto it = v.begin();
-    EXPECT_EQ(*it,   (std::tuple{'x', 'y'}));
+    EXPECT_EQ(*it, (std::tuple{'x', 'y'}));
     EXPECT_EQ(*++it, (std::tuple{'x', 'c'}));
     EXPECT_EQ(*++it, (std::tuple{'x', 'd'}));
     EXPECT_EQ(*++it, (std::tuple{'y', 'c'}));

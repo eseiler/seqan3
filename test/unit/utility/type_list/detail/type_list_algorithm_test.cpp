@@ -18,11 +18,17 @@
 
 struct is_integral_fn
 {
-    bool operator()(...) { return false; }
+    bool operator()(...)
+    {
+        return false;
+    }
 
     template <typename identity_t>
-        requires std::integral<typename identity_t::type>
-    bool operator()(identity_t) { return true; }
+        requires std::integral<typename identity_t::type> bool
+    operator()(identity_t)
+    {
+        return true;
+    }
 };
 
 TEST(pack_algorithm, all_of_in_type_list)
@@ -63,10 +69,7 @@ TEST(pack_algorithm, for_each_type_in_type_list)
 {
     std::stringstream stream{};
 
-    auto fn = [&stream](auto id)
-    {
-        print_to_stream(stream, id);
-    };
+    auto fn = [&stream](auto id) { print_to_stream(stream, id); };
 
     using types = seqan3::type_list<bool, uint8_t, int8_t, uint16_t, int16_t, uint32_t, int32_t, uint64_t, int64_t>;
     seqan3::detail::for_each<types>(fn);

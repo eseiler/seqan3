@@ -6,6 +6,7 @@
 // -----------------------------------------------------------------------------------------------------
 
 #include <gtest/gtest.h>
+
 #include <optional>
 #include <ostream>
 #include <variant>
@@ -22,10 +23,7 @@ using seqan3::operator""_dna4;
 using namespace std::string_literals;
 
 // Returns a string as gtest would print the given value.
-auto gtest_str = [](auto && v)
-{
-    return ::testing::PrintToString(v);
-};
+auto gtest_str = [](auto && v) { return ::testing::PrintToString(v); };
 
 // Returns a string as seqan3 would print the given value.
 auto debug_str = [](auto && v)
@@ -63,8 +61,8 @@ TEST(pretty_printing, gtest_output)
 TEST(pretty_printing, std_output)
 {
     // if any of these tests get supported by googletest move them to gtest_output
-    EXPECT_EQ(gtest_str(std::vector<std::vector<int>>{{0,1}, {2,3}, {1,2}, {0}}), "[[0,1],[2,3],[1,2],[0]]"s);
-    EXPECT_EQ(debug_str(std::vector<std::vector<int>>{{0,1}, {2,3}, {1,2}, {0}}), "[[0,1],[2,3],[1,2],[0]]"s);
+    EXPECT_EQ(gtest_str(std::vector<std::vector<int>>{{0, 1}, {2, 3}, {1, 2}, {0}}), "[[0,1],[2,3],[1,2],[0]]"s);
+    EXPECT_EQ(debug_str(std::vector<std::vector<int>>{{0, 1}, {2, 3}, {1, 2}, {0}}), "[[0,1],[2,3],[1,2],[0]]"s);
 
     EXPECT_EQ(gtest_str(std::nullopt), "<VALUELESS_OPTIONAL>"s);
     EXPECT_EQ(debug_str(std::nullopt), "<VALUELESS_OPTIONAL>"s);

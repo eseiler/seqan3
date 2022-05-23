@@ -14,35 +14,35 @@
 #include <seqan3/io/stream/detail/fast_istreambuf_iterator.hpp>
 
 #if defined(SEQAN3_HAS_ZLIB)
-    #include <seqan3/contrib/stream/bgzf_istream.hpp>
-    #include <seqan3/contrib/stream/bgzf_ostream.hpp>
-    #include <seqan3/contrib/stream/gz_istream.hpp>
-    #include <seqan3/contrib/stream/gz_ostream.hpp>
+#    include <seqan3/contrib/stream/bgzf_istream.hpp>
+#    include <seqan3/contrib/stream/bgzf_ostream.hpp>
+#    include <seqan3/contrib/stream/gz_istream.hpp>
+#    include <seqan3/contrib/stream/gz_ostream.hpp>
 #endif
 
 // only benchmark BZIP2 if explicitly requested, because slow setup
 #if !defined(SEQAN3_BENCH_BZIP2) && defined(SEQAN3_HAS_BZIP2)
-    #undef SEQAN3_HAS_BZIP2
+#    undef SEQAN3_HAS_BZIP2
 #endif
 
 #if defined(SEQAN3_HAS_BZIP2)
-    #include <seqan3/contrib/stream/bz2_istream.hpp>
-    #include <seqan3/contrib/stream/bz2_ostream.hpp>
+#    include <seqan3/contrib/stream/bz2_istream.hpp>
+#    include <seqan3/contrib/stream/bz2_ostream.hpp>
 #endif
 
 // SEQAN2
 #if __has_include(<seqan/stream.h>)
-    #define SEQAN3_HAS_SEQAN2 1
+#    define SEQAN3_HAS_SEQAN2 1
 
-    #if defined(SEQAN3_HAS_ZLIB)
-        #define SEQAN_HAS_ZLIB 1
-    #endif
+#    if defined(SEQAN3_HAS_ZLIB)
+#        define SEQAN_HAS_ZLIB 1
+#    endif
 
-    #if defined(SEQAN3_HAS_BZIP2)
-        #define SEQAN_HAS_BZIP2 1
-    #endif
+#    if defined(SEQAN3_HAS_BZIP2)
+#        define SEQAN_HAS_BZIP2 1
+#    endif
 
-    #include <seqan/stream.h>
+#    include <seqan/stream.h>
 #endif
 
 #ifndef NDEBUG
@@ -51,17 +51,14 @@ inline constexpr size_t input_size = 10'000;
 inline constexpr size_t input_size = 10'000'000;
 #endif // NDEBUG
 
-std::string input
-{
-    [] ()
-    {
-        std::string line{"The quick brown fox jumps over the lazy dog"};
-        std::string ret;
-        for (size_t i = 0; i < input_size; ++i)
-            ret += line;
-        return ret;
-    } ()
-};
+std::string input{[]()
+                  {
+                      std::string line{"The quick brown fox jumps over the lazy dog"};
+                      std::string ret;
+                      for (size_t i = 0; i < input_size; ++i)
+                          ret += line;
+                      return ret;
+                  }()};
 
 template <typename t>
 std::string const input_comp;
@@ -73,9 +70,8 @@ std::string const & input_comp<seqan::Nothing> = input;
 
 #if defined(SEQAN3_HAS_ZLIB)
 template <>
-std::string const input_comp<seqan3::contrib::gz_istream>
-{
-    [] ()
+std::string input_comp<seqan3::contrib::gz_istream> const {
+    []()
     {
         std::ostringstream ret;
         { // In scope to force flush of ostream on destruction.
@@ -83,13 +79,11 @@ std::string const input_comp<seqan3::contrib::gz_istream>
             std::copy(input.begin(), input.end(), std::ostreambuf_iterator<char>(os));
         }
         return ret.str();
-    } ()
-};
+    }()};
 
 template <>
-std::string const input_comp<seqan3::contrib::bgzf_istream>
-{
-    [] ()
+std::string input_comp<seqan3::contrib::bgzf_istream> const {
+    []()
     {
         std::ostringstream ret;
         { // In scope to force flush of ostream on destruction.
@@ -97,22 +91,20 @@ std::string const input_comp<seqan3::contrib::bgzf_istream>
             std::copy(input.begin(), input.end(), std::ostreambuf_iterator<char>(os));
         }
         return ret.str();
-    } ()
-};
-#ifdef SEQAN3_HAS_SEQAN2
+    }()};
+#    ifdef SEQAN3_HAS_SEQAN2
 template <>
 std::string const & input_comp<seqan::GZFile> = input_comp<seqan3::contrib::gz_istream>;
 
 template <>
 std::string const & input_comp<seqan::BgzfFile> = input_comp<seqan3::contrib::bgzf_istream>;
-#endif
+#    endif
 #endif
 
 #if defined(SEQAN3_HAS_BZIP2)
 template <>
-std::string const input_comp<seqan3::contrib::bz2_istream>
-{
-    [] ()
+std::string input_comp<seqan3::contrib::bz2_istream> const {
+    []()
     {
         std::ostringstream ret;
         { // In scope to force flush of ostream on destruction.
@@ -120,12 +112,11 @@ std::string const input_comp<seqan3::contrib::bz2_istream>
             std::copy(input.begin(), input.end(), std::ostreambuf_iterator<char>(os));
         }
         return ret.str();
-    } ()
-};
-#ifdef SEQAN3_HAS_SEQAN2
+    }()};
+#    ifdef SEQAN3_HAS_SEQAN2
 template <>
 std::string const & input_comp<seqan::BZ2File> = input_comp<seqan3::contrib::bz2_istream>;
-#endif
+#    endif
 #endif
 
 // ============================================================================
@@ -269,7 +260,7 @@ void seqan2_uncompressed(benchmark::State & state)
     {
         s.clear();
         s.seekg(0, std::ios::beg);
-        auto it = seqan::Iter<std::istringstream, seqan::StreamIterator<seqan::Input> >(s);
+        auto it = seqan::Iter<std::istringstream, seqan::StreamIterator<seqan::Input>>(s);
 
         for (size_t v = 0; v < input.size(); ++v)
         {
@@ -291,7 +282,7 @@ void seqan2_compressed_impl(benchmark::State & state)
         s.clear();
         s.seekg(0, std::ios::beg);
         stream_t comp{s};
-        auto it = seqan::Iter<std::istringstream, seqan::StreamIterator<seqan::Input> >(comp);
+        auto it = seqan::Iter<std::istringstream, seqan::StreamIterator<seqan::Input>>(comp);
 
         for (size_t v = 0; v < input_comp<compression_t>.size(); ++v)
         {
@@ -306,17 +297,17 @@ void seqan2_compressed_impl(benchmark::State & state)
 template <typename compression_type>
 void seqan2_compressed(benchmark::State & state)
 {
-    #ifdef SEQAN_HAS_ZLIB
+#    ifdef SEQAN_HAS_ZLIB
     if constexpr (std::is_same_v<compression_type, seqan::GZFile>)
         seqan2_compressed_impl<seqan::GZFile, zlib_stream::zip_istream>(state);
     else if constexpr (std::is_same_v<compression_type, seqan::BgzfFile>)
         seqan2_compressed_impl<seqan::BgzfFile, seqan::bgzf_istream>(state);
-    #endif // SEQAN_HAS_ZLIB
+#    endif // SEQAN_HAS_ZLIB
 
-    #ifdef SEQAN_HAS_BZIP2
+#    ifdef SEQAN_HAS_BZIP2
     if constexpr (std::is_same_v<compression_type, seqan::BZ2File>)
         seqan2_compressed_impl<seqan::BZ2File, bzip2_stream::bzip2_istream>(state);
-    #endif // SEQAN_HAS_BZIP2
+#    endif // SEQAN_HAS_BZIP2
 
     if constexpr (std::is_same_v<compression_type, seqan::Nothing>)
         seqan2_uncompressed(state);
@@ -324,13 +315,13 @@ void seqan2_compressed(benchmark::State & state)
 
 BENCHMARK_TEMPLATE(seqan2_compressed, seqan::Nothing);
 
-#ifdef SEQAN_HAS_ZLIB
+#    ifdef SEQAN_HAS_ZLIB
 BENCHMARK_TEMPLATE(seqan2_compressed, seqan::GZFile);
 BENCHMARK_TEMPLATE(seqan2_compressed, seqan::BgzfFile);
-#endif
-#ifdef SEQAN_HAS_BZIP2
+#    endif
+#    ifdef SEQAN_HAS_BZIP2
 BENCHMARK_TEMPLATE(seqan2_compressed, seqan::BZ2File);
-#endif
+#    endif
 
 #endif // SEQAN3_HAS_SEQAN2
 

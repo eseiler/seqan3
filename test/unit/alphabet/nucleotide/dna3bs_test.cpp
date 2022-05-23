@@ -97,9 +97,9 @@ TEST(dna3bs, string_literal)
 
 TEST(dna3bs, char_is_valid)
 {
-    constexpr auto validator = seqan3::is_char<'A'> || seqan3::is_char<'G'> || seqan3::is_char<'T'>
-                            || seqan3::is_char<'U'> || seqan3::is_char<'a'> || seqan3::is_char<'g'>
-                            || seqan3::is_char<'t'> || seqan3::is_char<'u'>;
+    constexpr auto validator = seqan3::is_char<'A'> || seqan3::is_char<'G'> || seqan3::is_char<'T'> ||
+                               seqan3::is_char<'U'> || seqan3::is_char<'a'> || seqan3::is_char<'g'> ||
+                               seqan3::is_char<'t'> || seqan3::is_char<'u'>;
     for (char c : std::views::iota(std::numeric_limits<char>::min(), std::numeric_limits<char>::max()))
         EXPECT_EQ(seqan3::dna3bs::char_is_valid(c), validator(c));
 }

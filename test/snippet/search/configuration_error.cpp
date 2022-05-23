@@ -38,6 +38,5 @@ int main()
                                        seqan3::search_cfg::max_error_insertion{seqan3::search_cfg::error_count{2}} |
                                        seqan3::search_cfg::max_error_deletion{seqan3::search_cfg::error_count{2}};
 
-
     return 0;
 }
