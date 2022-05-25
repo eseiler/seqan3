@@ -15,8 +15,8 @@
 #ifndef SEQAN_STD_RANGES_SHIM
 #define SEQAN_STD_RANGES_SHIM
 
-#include <ranges>
 #include <iterator>
+#include <ranges>
 
 /*!\defgroup std_ranges ranges
  * \ingroup std
