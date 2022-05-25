@@ -71,7 +71,7 @@ jobs:
         uses: tj-actions/changed-files@v20
         with:
           path: seqan3
-          use_fork_point: true
+          since_last_remote_commit: true
           files: |
             **.cpp
             **.hpp
