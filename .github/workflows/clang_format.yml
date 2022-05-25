@@ -71,13 +71,6 @@ jobs:
         with:
           path: seqan3
           use_fork_point: true
-          files: |
-            **.cpp
-            **.hpp
-            include/seqan3/std/*
-          files_ignore: |
-            include/seqan3/contrib/**
-            submodules/**
 
       - name: Show output
         run: |
