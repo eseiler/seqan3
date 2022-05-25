@@ -71,6 +71,9 @@ jobs:
         with:
           path: seqan3
           use_fork_point: true
+          files: |
+            *.hpp
+            *.cpp
 
       - name: Show output
         run: |
