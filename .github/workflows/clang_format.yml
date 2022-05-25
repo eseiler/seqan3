@@ -70,7 +70,7 @@ jobs:
         uses: tj-actions/changed-files@v20
         with:
           path: seqan3
-          since_last_remote_commit: true
+          use_fork_point: true
           files: |
             **.cpp
             **.hpp
