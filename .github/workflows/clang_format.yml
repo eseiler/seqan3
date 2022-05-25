@@ -103,13 +103,13 @@ jobs:
       #     git_user_signingkey: true
       #     git_commit_gpgsign: true
 
-      # - name: Commit changes
-      #   uses: EndBug/add-and-commit@v9
-      #   with:
-      #     author_name: seqan-actions[bot]
-      #     author_email: seqan-actions@users.noreply.github.com
-      #     message: '[MISC] clang-format'
-      #     cwd: './seqan3'
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: seqan-actions[bot]
+          author_email: seqan-actions@users.noreply.github.com
+          message: '[MISC] clang-format'
+          cwd: './seqan3'
 
       # # Wait for 5 seconds such that workflows triggered by adding the label run on the newest commit.
       # - name: Defer workflow
