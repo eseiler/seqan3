@@ -5,8 +5,8 @@
 // shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE.md
 // -----------------------------------------------------------------------------------------------------
 
-#include <seqan3/alphabet/aminoacid/aa10li.hpp>
 #include <seqan3/core/debug_stream/range.hpp>
+#include <seqan3/alphabet/aminoacid/aa10li.hpp>
 #include <seqan3/utility/views/zip.hpp>
 
 #include "../alphabet_constexpr_test_template.hpp"
