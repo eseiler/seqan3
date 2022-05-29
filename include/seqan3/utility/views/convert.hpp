@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <concepts>
 #include <seqan3/std/ranges>
+#include <concepts>
 
 #include <seqan3/utility/concept.hpp>
 
