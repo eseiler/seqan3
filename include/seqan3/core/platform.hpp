@@ -209,9 +209,9 @@ static_assert(sdsl::sdsl_version_major == 3, "Only version 3 of the SDSL is supp
  * * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95371
  * * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95578
  */
-#if defined(__GNUC__) && (__GNUC__ == 10 && __GNUC_MINOR__ <= 1)
+#if defined(__GNUC__) && (__GNUC__ == 10 && __GNUC_MINOR__ <= 2)
 #    pragma GCC warning                                                                                                \
-        "Be aware that gcc 10.0 and 10.1 are known to have several bugs that might make SeqAn3 fail to compile. Please use gcc >= 10.2."
+        "Be aware that gcc 10.0, 10.1 and 10.2 are known to have several bugs that might make SeqAn3 fail to compile. Please use gcc >= 10.3."
 #endif // defined(__GNUC__) && (__GNUC__ == 10 && __GNUC_MINOR__ <= 1)
 
 #ifndef SEQAN3_WORKAROUND_VIEW_PERFORMANCE
