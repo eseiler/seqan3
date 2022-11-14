@@ -3,8 +3,10 @@ How to setup vercel.com:
 * In vercel.com go create a new project.
 * Import it from the git repository.
 * Select personal account
-* Give it a Project Name and select Framework Preset to Other
-* Set Output Directory to "./export"
-* Set Build Command to "./test/documentation/.vercel/build.sh"
-* This option needs to be changed in the settings of the project:
-  * Set Install Command to "./test/documentation/.vercel/install.sh"
+* Give it a Project Name and apply these settings:
+* * Framekwork: Other
+* * Build Command: ./1_build.sh
+* * Output Directory: ./export
+* * Install Command: ./0_setup.sh
+* * Root Directory: test/documentation/.vercel
+* * * Enabled: Include source files outside of the Root Directory in the Build Step.

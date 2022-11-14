@@ -44,7 +44,10 @@ option (SEQAN3_USER_DOC "Create build target and test for user documentation." O
 option (SEQAN3_DEV_DOC "Create build target and test for developer documentation." ON)
 option (SEQAN3_VERCEL_PREVIEW_DOC "Is this a preview build by vercel.com?" OFF)
 
+set (SEQAN3_DOXYGEN_EXTERNAL_SEARCH "NO")
+
 if (SEQAN3_VERCEL_PREVIEW_DOC)
+    set (SEQAN3_DOXYGEN_EXTERNAL_SEARCH "YES")
     set (SEQAN3_DOXYGEN_USE_MATHJAX "YES")
     set (SEQAN3_DOXYGEN_DOT_NUM_THREADS "2")
     set (SEQAN3_DOXYFILE_OPTION_POWERED_BY_VERCEL
