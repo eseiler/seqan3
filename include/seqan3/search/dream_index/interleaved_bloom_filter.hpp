@@ -636,6 +636,7 @@ public:
      * Concurrent invocations of this function are not thread safe, please create a
      * seqan3::interleaved_bloom_filter::membership_agent_type for each thread.
      */
+#if OLD__
     [[nodiscard]] binning_bitvector const & bulk_contains(size_t const value) & noexcept
     {
         assert(ibf_ptr != nullptr);
@@ -662,6 +663,63 @@ public:
 
         return result_buffer;
     }
+#else
+    std::array<size_t, 5> bloom_filter_indices;
+
+    [[nodiscard]] binning_bitvector const & bulk_contains(size_t const value) & noexcept
+    {
+        assert(ibf_ptr != nullptr);
+        assert(result_buffer.size() == ibf_ptr->bin_count());
+
+        size_t const binwords = ibf_ptr->bin_words; // Needed for autovectorization of loop
+        size_t const hashfuns = ibf_ptr->hash_funs;
+
+        for (size_t i = 0; i < hashfuns; ++i)
+            bloom_filter_indices[i] = ibf_ptr->hash_and_fit(value, ibf_ptr->hash_seeds[i]) >> 6;
+
+        uint64_t * const raw = result_buffer.raw_data().data();
+        std::memcpy(raw, ibf_ptr->data.data() + bloom_filter_indices[0], sizeof(binwords) * binwords);
+
+        // https://godbolt.org/z/xsjEvYe8s
+        for (size_t i = 1; i < hashfuns; ++i)
+        {
+            uint64_t const * const ibf_raw = ibf_ptr->data.data() + bloom_filter_indices[i];
+
+            switch (binwords)
+            {
+            case 1u: // 1 AND (64 bit)
+                raw[0] &= ibf_raw[0];
+                break;
+            case 2u: // 1 SSE4 instruction (128 bit)
+#    pragma omp simd
+                for (size_t batch = 0; batch < 2u; ++batch)
+                    raw[batch] &= ibf_raw[batch];
+                break;
+            case 3u: // 1 SSE4 instruction (128 bit) + 1 AND (64 bit)
+#    pragma omp simd
+                for (size_t batch = 0; batch < 3u; ++batch)
+                    raw[batch] &= ibf_raw[batch];
+                break;
+            case 4u: // 1 AVX2 instruction (256 bit)
+#    pragma omp simd
+                for (size_t batch = 0; batch < 4u; ++batch)
+                    raw[batch] &= ibf_raw[batch];
+                break;
+            case 8u: // 1 AVX512 instruction (512 bit)
+#    pragma omp simd
+                for (size_t batch = 0; batch < 8u; ++batch)
+                    raw[batch] &= ibf_raw[batch];
+                break;
+            default: // Auto vectorize. Might create different versions.
+#    pragma GCC ivdep // The pointers are not pointing to the same data (aliasing). Same as restrict keyword.
+                for (size_t batch = 0; batch < binwords; ++batch)
+                    raw[batch] &= ibf_raw[batch];
+            }
+        }
+
+        return result_buffer;
+    }
+#endif
 
     // `bulk_contains` cannot be called on a temporary, since the object the returned reference points to
     // is immediately destroyed.
@@ -822,6 +880,16 @@ private:
         || std::same_as<binning_bitvector_t,
                         interleaved_bloom_filter<data_layout::compressed>::membership_agent_type::binning_bitvector>;
 
+    static constexpr std::array<uint64_t, 64> masks{
+        1ULL,       1ULL << 1,  1ULL << 2,  1ULL << 3,  1ULL << 4,  1ULL << 5,  1ULL << 6,  1ULL << 7,
+        1ULL << 8,  1ULL << 9,  1ULL << 10, 1ULL << 11, 1ULL << 12, 1ULL << 13, 1ULL << 14, 1ULL << 15,
+        1ULL << 16, 1ULL << 17, 1ULL << 18, 1ULL << 19, 1ULL << 20, 1ULL << 21, 1ULL << 22, 1ULL << 23,
+        1ULL << 24, 1ULL << 25, 1ULL << 26, 1ULL << 27, 1ULL << 28, 1ULL << 29, 1ULL << 30, 1ULL << 31,
+        1ULL << 32, 1ULL << 33, 1ULL << 34, 1ULL << 35, 1ULL << 36, 1ULL << 37, 1ULL << 38, 1ULL << 39,
+        1ULL << 40, 1ULL << 41, 1ULL << 42, 1ULL << 43, 1ULL << 44, 1ULL << 45, 1ULL << 46, 1ULL << 47,
+        1ULL << 48, 1ULL << 49, 1ULL << 50, 1ULL << 51, 1ULL << 52, 1ULL << 53, 1ULL << 54, 1ULL << 55,
+        1ULL << 56, 1ULL << 57, 1ULL << 58, 1ULL << 59, 1ULL << 60, 1ULL << 61, 1ULL << 62, 1ULL << 63};
+
 public:
     /*!\name Constructors, destructor and assignment
      * \{
@@ -850,8 +918,19 @@ public:
      */
     template <typename binning_bitvector_t>
         requires is_binning_bitvector<binning_bitvector_t>
-    counting_vector & operator+=(binning_bitvector_t const & binning_bitvector)
+    counting_vector & operator+=(binning_bitvector_t const & binning_bitvector) noexcept
     {
+//         uint64_t const * const raw = binning_bitvector.raw_data().data();
+//         size_t const size = binning_bitvector.size() >> 5;
+//         for (size_t i = 0u; i < size; ++i)
+//         {
+//             uint32_t const word = raw[i / 2] >> (32 * i % 2);
+// #pragma omp simd
+//             for (int j = 0; j < 32; ++j)
+//             {
+//                 (*this)[(i * 32 + j)] += (word >> j) & 1;
+//             }
+//         }
         for_each_set_bin(binning_bitvector,
                          [this](size_t const bin)
                          {

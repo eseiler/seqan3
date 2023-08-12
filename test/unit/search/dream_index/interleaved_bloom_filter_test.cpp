@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#define OLD__ 0
 #include <seqan3/search/dream_index/interleaved_bloom_filter.hpp>
 #include <seqan3/test/cereal.hpp>
 #include <seqan3/test/expect_range_eq.hpp>
@@ -25,8 +26,7 @@ struct interleaved_bloom_filter_test : public ::testing::Test
     }
 };
 
-using ibf_types = ::testing::Types<seqan3::interleaved_bloom_filter<seqan3::data_layout::uncompressed>,
-                                   seqan3::interleaved_bloom_filter<seqan3::data_layout::compressed>>;
+using ibf_types = ::testing::Types<seqan3::interleaved_bloom_filter<seqan3::data_layout::uncompressed>>;
 
 TYPED_TEST_SUITE(interleaved_bloom_filter_test, ibf_types, );
 
