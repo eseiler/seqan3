@@ -289,6 +289,30 @@ public:
         };
     }
 
+    /*!\brief Inserts a value into a specific bin and returns true if the value was already present in the bin.
+     * \param[in] value The raw numeric value to process.
+     * \param[in] bin The bin index to insert into.
+     * \return true if value already existed in the bin, i.e. at all hashes the value in de bin was set to 1 already.
+     *
+     * \attention This function is only available for **uncompressed** Interleaved Bloom Filters.
+     * \author Myrthe Willemsen Note it is not possible to do this outside of the IBF, as I cannot inherit hash seeds, and hash_and_fit. these are private
+     */
+    bool emplace_exists(size_t const value, bin_index const bin) noexcept
+        requires (data_layout_mode == data_layout::uncompressed)
+    {
+        bool exists{true};
+        assert(bin.get() < bins);
+        for (size_t i = 0; i < hash_funs; ++i)
+        {
+            size_t idx = hash_and_fit(value, hash_seeds[i]);
+            idx += bin.get();
+            assert(idx < data.size());
+            exists &= data[idx];
+            data[idx] = 1;
+        };
+        return exists;
+    }
+
     /*!\brief Clears a specific bin.
      * \param[in] bin The bin index to clear.
      *
