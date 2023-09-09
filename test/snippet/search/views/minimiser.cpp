@@ -3,37 +3,29 @@
 #include <seqan3/core/debug_stream.hpp>
 #include <seqan3/search/views/kmer_hash.hpp>
 #include <seqan3/search/views/minimiser.hpp>
+#include <seqan3/search/views/syncmer.hpp>
 
 using namespace seqan3::literals;
 
 int main()
 {
-    std::vector<seqan3::dna4> text{"ACGTAGC"_dna4};
+    static constexpr size_t const syncmer_t{0u};
+    static constexpr size_t const syncmer_k{5u};
+    static constexpr size_t const syncmer_s{2u};
 
-    auto hashes = text | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{3}});
-    seqan3::debug_stream << hashes << '\n'; // [6,27,44,50,9]
+    std::vector<seqan3::dna4> text{"GGCAAGTGACA"_dna4};
+    auto text_begin = text.begin();
 
-    auto minimiser = hashes | seqan3::views::minimiser(4);
-    seqan3::debug_stream << minimiser << '\n'; // [6,9]
+    // auto hashes = text | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{syncmer_s}});
+    // seqan3::debug_stream << hashes << '\n';
 
-    // kmer_hash with gaps, hashes: [2,7,8,14,1], minimiser: [2,1]
-    seqan3::debug_stream << (text | seqan3::views::kmer_hash(0b101_shape) | seqan3::views::minimiser(4)) << '\n';
+    auto syncmer = text | seqan3::views::syncmer(syncmer_k, syncmer_s, syncmer_t);
 
-    /* Minimiser view with two ranges
-     * The second range defines the hash values from the reverse complement, the second reverse is necessary to put the
-     * hash values in the correct order. For the example here:
-     * ACGTAGC | seqan3::views::complement                      => TGCATCG
-     *         | std::views::reverse                            => GCTACGT
-     *         | seqan3::views::kmer_hash(seqan3::ungapped{3})  => [39 (for GCA), 28 (for CTA), 49 (for TAC),
-     *                                                              6 (for ACG), 27 (for CGT)]
-     * "GCA" is not the reverse complement from the first k-mer in "ACGTAGC", which is "ACG", but "CGT" is.
-     * Therefore, a second reverse is necessary to find the smallest value between the original sequence and its
-     * reverse complement.
-     */
-    auto reverse_complement_hashes = text | seqan3::views::complement | std::views::reverse
-                                   | seqan3::views::kmer_hash(seqan3::ungapped{3}) | std::views::reverse;
-    seqan3::debug_stream << reverse_complement_hashes << '\n'; // [27,6,49,28,39]
-
-    auto minimiser2 = seqan3::detail::minimiser_view{hashes, reverse_complement_hashes, 4};
-    seqan3::debug_stream << minimiser2 << '\n'; // [6,6]
+    for (auto syncmer_it = syncmer.begin(); syncmer_it != syncmer.end(); ++syncmer_it)
+    {
+        auto text_pos = syncmer_it.base() - text_begin - syncmer_k + 1;
+        size_t const window_pos = syncmer_it.get_offset();
+        seqan3::debug_stream << "Text Pos: " << text_pos << " Text: " << std::span{text_begin + text_pos, syncmer_k}
+                             << " Window Pos: " << window_pos << " Value: " << *syncmer_it << '\n';
+    }
 }
