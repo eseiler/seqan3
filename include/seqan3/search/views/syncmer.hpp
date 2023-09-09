@@ -26,7 +26,8 @@ private:
     static constexpr bool const_iterable = seqan3::const_iterable_range<urng_t>;
 
     urng_t urange{};
-    size_t window_size{};
+    size_t kmer_size{};
+    size_t smer_size{};
     size_t offset{};
 
     template <bool const_range>
@@ -44,39 +45,42 @@ public:
     syncmer_view & operator=(syncmer_view && rhs) = default;
     ~syncmer_view() = default;
 
-    explicit syncmer_view(urng_t urange, size_t const window_size, size_t const offset) :
+    explicit syncmer_view(urng_t urange, size_t const kmer_size, size_t const smer_size, size_t const offset) :
         urange{std::move(urange)},
-        window_size{window_size},
+        kmer_size{kmer_size},
+        smer_size{smer_size},
         offset{offset}
     {}
 
     template <typename other_urng_t>
         requires (std::ranges::viewable_range<other_urng_t>
                   && std::constructible_from<urng_t, std::ranges::ref_view<std::remove_reference_t<other_urng_t>>>)
-    explicit syncmer_view(other_urng_t && urange, size_t const window_size, size_t const offset) :
+    explicit syncmer_view(other_urng_t && urange, size_t const kmer_size, size_t const smer_size, size_t const offset) :
         urange{std::views::all(std::forward<other_urng_t>(urange))},
-        window_size{window_size},
+        kmer_size{kmer_size},
+        smer_size{smer_size},
         offset{offset}
     {}
 
     template <typename other_urng_t>
         requires (std::ranges::viewable_range<other_urng_t>
                   && std::constructible_from<urng_t, std::views::all_t<other_urng_t>>)
-    explicit syncmer_view(other_urng_t && urange, size_t const window_size, size_t const offset) :
+    explicit syncmer_view(other_urng_t && urange, size_t const kmer_size, size_t const smer_size, size_t const offset) :
         urange{std::views::all(std::forward<other_urng_t>(urange))},
-        window_size{window_size},
+        kmer_size{kmer_size},
+        smer_size{smer_size},
         offset{offset}
     {}
 
     basic_iterator<false> begin()
     {
-        return {std::ranges::begin(urange), std::ranges::end(urange), window_size, offset};
+        return {std::ranges::begin(urange), std::ranges::end(urange), kmer_size, smer_size, offset};
     }
 
     basic_iterator<true> begin() const
         requires const_iterable
     {
-        return {std::ranges::begin(urange), std::ranges::end(urange), window_size, offset};
+        return {std::ranges::begin(urange), std::ranges::end(urange), kmer_size, smer_size, offset};
     }
 
     sentinel end() const
@@ -107,12 +111,19 @@ private:
     urng_iterator_t urng_iterator{};
     urng_sentinel_t urng_sentinel{};
     uint64_t mask{};
+    uint64_t smer_mask{};
     size_t offset{};
 
-    value_type smer_value{};
-    value_type kmer_value{};
-    std::deque<value_type> smer_values{};
-    size_t smer_position_offset{};
+    value_type fwd_smer_value{};
+    value_type rc_smer_value{};
+    value_type fwd_kmer_value{};
+    value_type rc_kmer_value{};
+    value_type syncmer_value{};
+    std::deque<value_type> fwd_smer_values{};
+    std::deque<value_type> rc_smer_values{};
+    size_t fwd_smer_position{};
+    size_t rc_smer_position{};
+    size_t kmer_size{};
 
 public:
     basic_iterator() = default;
@@ -122,30 +133,32 @@ public:
     basic_iterator & operator=(basic_iterator &&) = default;
     ~basic_iterator() = default;
 
-    basic_iterator(basic_iterator<!const_range> const & it)
-        requires const_range
-        :
-        urng_iterator{std::move(it.urng_iterator)},
-        urng_sentinel{std::move(it.urng_sentinel)},
-        mask{std::move(it.mask)},
-        offset{std::move(it.offset)},
-        smer_value{std::move(it.smer_value)},
-        kmer_value{std::move(it.kmer_value)},
-        smer_values{std::move(it.smer_values)},
-        smer_position_offset{std::move(it.smer_position_offset)}
-    {}
+    // basic_iterator(basic_iterator<!const_range> const & it)
+    //     requires const_range
+    //     :
+    //     urng_iterator{std::move(it.urng_iterator)},
+    //     urng_sentinel{std::move(it.urng_sentinel)},
+    //     mask{std::move(it.mask)},
+    //     offset{std::move(it.offset)},
+    //     fwd_smer_value{std::move(it.fwd_smer_value)},
+    //     fwd_kmer_value{std::move(it.fwd_kmer_value)},
+    //     fwd_smer_values{std::move(it.fwd_smer_values)},
+    //     fwd_smer_position{std::move(it.fwd_smer_position)}
+    // {}
 
     basic_iterator(urng_iterator_t urng_iterator,
                    urng_sentinel_t urng_sentinel,
-                   size_t window_size,
+                   size_t const kmer_size,
+                   size_t const smer_size,
                    size_t const offset) :
         urng_iterator{std::move(urng_iterator)},
         urng_sentinel{std::move(urng_sentinel)},
-        offset{offset}
+        mask{(1ULL << (2 * kmer_size)) - 1u},
+        smer_mask{(1ULL << (2 * smer_size)) - 1u},
+        offset{offset},
+        kmer_size{kmer_size}
     {
-        size_t size = std::ranges::distance(urng_iterator, urng_sentinel);
-        window_size = std::min<size_t>(window_size, size);
-        mask = (1ULL << (2 * window_size)) - 1u;
+        size_t const window_size = kmer_size - smer_size + 1u;
 
         init(window_size);
     }
@@ -153,7 +166,7 @@ public:
     friend bool operator==(basic_iterator const & lhs, basic_iterator const & rhs)
     {
         return (lhs.urng_iterator == rhs.urng_iterator) && (rhs.urng2_iterator == rhs.urng2_iterator)
-            && (lhs.smer_values.size() == rhs.smer_values.size());
+            && (lhs.fwd_smer_values.size() == rhs.fwd_smer_values.size());
     }
 
     friend bool operator!=(basic_iterator const & lhs, basic_iterator const & rhs)
@@ -196,7 +209,7 @@ public:
 
     value_type operator*() const noexcept
     {
-        return kmer_value;
+        return syncmer_value;
     }
 
     constexpr urng_iterator_t const & base() const & noexcept
@@ -211,15 +224,20 @@ public:
 
     size_t get_offset() const noexcept
     {
-        return smer_position_offset;
+        return offset;
     }
 
 private:
     void update_kmer_value()
     {
-        kmer_value <<= 2;
-        kmer_value |= get_smer_value();
-        kmer_value &= mask;
+        value_type const current_smer = get_smer_value();
+
+        fwd_kmer_value <<= 2;
+        fwd_kmer_value |= current_smer;
+        fwd_kmer_value &= mask;
+
+        rc_kmer_value >>= 2;
+        rc_kmer_value |= (current_smer ^ 3u) << (2 * kmer_size - 2);
     }
 
     void next_unique_syncmer()
@@ -231,6 +249,11 @@ private:
     auto get_smer_value() const
     {
         return *urng_iterator;
+    }
+
+    auto get_smer_rc_value() const
+    {
+        
     }
 
     void next_smer()
@@ -246,16 +269,33 @@ private:
         for (size_t i = 0u; i < window_size - 1u; ++i)
         {
             update_kmer_value();
-            smer_values.push_back(get_smer_value());
+            fwd_smer_values.push_back(get_smer_value());
+            rc_smer_values.push_front(get_smer_value() ^ 3u);
             next_smer();
         }
-        smer_values.push_back(get_smer_value());
+        fwd_smer_values.push_back(get_smer_value());
+        rc_smer_values.push_front(get_smer_value() ^ 3u);
         update_kmer_value();
-        auto smer_it = std::ranges::min_element(smer_values, std::less_equal<value_type>{});
-        smer_value = *smer_it;
-        smer_position_offset = std::distance(std::begin(smer_values), smer_it);
-        if (offset != smer_position_offset)
+
+        auto fwd_smer_it = std::ranges::min_element(fwd_smer_values, std::less_equal<value_type>{});
+        fwd_smer_value = *fwd_smer_it;
+        fwd_smer_position = std::distance(std::begin(fwd_smer_values), fwd_smer_it);
+
+        auto rc_smer_it = std::ranges::min_element(rc_smer_values, std::less_equal<value_type>{});
+        rc_smer_value = *rc_smer_it;
+        rc_smer_position = std::distance(std::begin(rc_smer_values), rc_smer_it);
+
+        if (fwd_kmer_value <= rc_kmer_value)
+        {
+            if (offset != fwd_smer_position)
+                next_unique_syncmer();
+            else
+                syncmer_value = fwd_kmer_value;
+        }
+        else if (offset != rc_smer_position)
             next_unique_syncmer();
+        else
+            syncmer_value = rc_kmer_value;
     }
 
     bool next_syncmer()
@@ -266,27 +306,54 @@ private:
 
         value_type const new_value = get_smer_value();
 
-        smer_values.pop_front();
-        smer_values.push_back(new_value);
+        fwd_smer_values.pop_front();
+        fwd_smer_values.push_back(new_value);
         update_kmer_value();
 
-        if (smer_position_offset == 0)
+        rc_smer_values.pop_back();
+        rc_smer_values.push_front(new_value ^ 3u);
+
+        if (fwd_smer_position == 0)
         {
-            auto smer_it = std::ranges::min_element(smer_values, std::less_equal<value_type>{});
-            smer_value = *smer_it;
-            smer_position_offset = std::distance(std::begin(smer_values), smer_it);
-            return smer_position_offset == offset;
+            auto smer_it = std::ranges::min_element(fwd_smer_values, std::less_equal<value_type>{});
+            fwd_smer_value = *smer_it;
+            fwd_smer_position = std::distance(std::begin(fwd_smer_values), smer_it);
+        }
+        else if (new_value < fwd_smer_value)
+        {
+            fwd_smer_value = new_value;
+            fwd_smer_position = fwd_smer_values.size() - 1;
+        }
+        else
+        {
+            --fwd_smer_position;
         }
 
-        if (new_value < smer_value)
+        if (rc_smer_position == 0)
         {
-            smer_value = new_value;
-            smer_position_offset = smer_values.size() - 1;
-            return smer_position_offset == offset;
+            auto smer_it = std::ranges::min_element(rc_smer_values, std::less_equal<value_type>{});
+            rc_smer_value = *smer_it;
+            rc_smer_position = std::distance(std::begin(rc_smer_values), smer_it);
+        }
+        else if ((new_value ^ 3u) < rc_smer_value)
+        {
+            rc_smer_value = new_value ^ 3u;
+            rc_smer_position = 0;
+        }
+        else
+        {
+            ++rc_smer_position;
         }
 
-        --smer_position_offset;
-        return smer_position_offset == offset;
+        if (fwd_kmer_value <= rc_kmer_value)
+        {
+            if (offset == fwd_smer_position)
+                syncmer_value = fwd_kmer_value;
+        }
+        else if (offset == rc_smer_position)
+            syncmer_value = rc_kmer_value;
+
+        return fwd_smer_position == offset || rc_smer_position == offset;
     }
 };
 
@@ -305,9 +372,7 @@ struct syncmer_fn
     operator()(urng_t && urange, size_t const kmer_size, uint8_t const smer_size, size_t const offset) const
     {
         auto view = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{smer_size}});
-        size_t const window_size = kmer_size - smer_size + 1u;
-
-        return syncmer_view{view, window_size, offset};
+        return syncmer_view{view, kmer_size, smer_size, offset};
     }
 };
 

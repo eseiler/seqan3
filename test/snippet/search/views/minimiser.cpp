@@ -10,7 +10,7 @@ using namespace seqan3::literals;
 int main()
 {
     static constexpr size_t const syncmer_t{0u};
-    static constexpr size_t const syncmer_k{5u};
+    static constexpr size_t const syncmer_k{3u};
     static constexpr size_t const syncmer_s{2u};
 
     std::vector<seqan3::dna4> text{"GGCAAGTGACA"_dna4};
