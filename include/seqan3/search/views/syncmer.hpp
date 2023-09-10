@@ -10,12 +10,8 @@
 #include <algorithm>
 #include <deque>
 
-#include <seqan3/core/detail/empty_type.hpp>
 #include <seqan3/core/range/detail/adaptor_from_functor.hpp>
-#include <seqan3/core/range/type_traits.hpp>
 #include <seqan3/search/views/kmer_hash.hpp>
-#include <seqan3/utility/range/concept.hpp>
-#include <seqan3/utility/type_traits/lazy_conditional.hpp>
 
 namespace seqan3::detail
 {
@@ -124,6 +120,7 @@ private:
     size_t fwd_smer_position{};
     size_t rc_smer_position{};
     size_t kmer_size{};
+    size_t smer_size{};
 
 public:
     basic_iterator() = default;
@@ -156,7 +153,8 @@ public:
         mask{(1ULL << (2 * kmer_size)) - 1u},
         smer_mask{(1ULL << (2 * smer_size)) - 1u},
         offset{offset},
-        kmer_size{kmer_size}
+        kmer_size{kmer_size},
+        smer_size{smer_size}
     {
         size_t const window_size = kmer_size - smer_size + 1u;
 
@@ -230,14 +228,12 @@ public:
 private:
     void update_kmer_value()
     {
-        value_type const current_smer = get_smer_value();
-
         fwd_kmer_value <<= 2;
-        fwd_kmer_value |= current_smer;
+        fwd_kmer_value |= get_smer_value();
         fwd_kmer_value &= mask;
 
         rc_kmer_value >>= 2;
-        rc_kmer_value |= (current_smer ^ 3u) << (2 * kmer_size - 2);
+        rc_kmer_value |= get_smer_rc_value() << (2 * (kmer_size - smer_size));
     }
 
     void next_unique_syncmer()
@@ -253,7 +249,19 @@ private:
 
     auto get_smer_rc_value() const
     {
-        
+        value_type current_smer = get_smer_value();
+        value_type rc_value{};
+
+        for (size_t i = 0u; i < smer_size - 1u; ++i)
+        {
+            rc_value |= current_smer & 3u;
+            rc_value <<= 2;
+            current_smer >>= 2;
+        }
+
+        rc_value |= current_smer & 3u;
+
+        return rc_value ^ smer_mask;
     }
 
     void next_smer()
@@ -270,11 +278,11 @@ private:
         {
             update_kmer_value();
             fwd_smer_values.push_back(get_smer_value());
-            rc_smer_values.push_front(get_smer_value() ^ 3u);
+            rc_smer_values.push_front(get_smer_rc_value());
             next_smer();
         }
         fwd_smer_values.push_back(get_smer_value());
-        rc_smer_values.push_front(get_smer_value() ^ 3u);
+        rc_smer_values.push_front(get_smer_rc_value());
         update_kmer_value();
 
         auto fwd_smer_it = std::ranges::min_element(fwd_smer_values, std::less_equal<value_type>{});
@@ -305,13 +313,14 @@ private:
             return true;
 
         value_type const new_value = get_smer_value();
+        value_type const new_rc_value = get_smer_rc_value();
 
         fwd_smer_values.pop_front();
         fwd_smer_values.push_back(new_value);
         update_kmer_value();
 
         rc_smer_values.pop_back();
-        rc_smer_values.push_front(new_value ^ 3u);
+        rc_smer_values.push_front(new_rc_value);
 
         if (fwd_smer_position == 0)
         {
@@ -335,9 +344,9 @@ private:
             rc_smer_value = *smer_it;
             rc_smer_position = std::distance(std::begin(rc_smer_values), smer_it);
         }
-        else if ((new_value ^ 3u) < rc_smer_value)
+        else if (new_rc_value < rc_smer_value)
         {
-            rc_smer_value = new_value ^ 3u;
+            rc_smer_value = new_rc_value;
             rc_smer_position = 0;
         }
         else
@@ -348,12 +357,18 @@ private:
         if (fwd_kmer_value <= rc_kmer_value)
         {
             if (offset == fwd_smer_position)
+            {
                 syncmer_value = fwd_kmer_value;
+                return true;
+            }
         }
         else if (offset == rc_smer_position)
+        {
             syncmer_value = rc_kmer_value;
+            return true;
+        }
 
-        return fwd_smer_position == offset || rc_smer_position == offset;
+        return false;
     }
 };
 
