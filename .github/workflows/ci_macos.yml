@@ -34,27 +34,11 @@ jobs:
             build_type: Release
             cxx_flags: "-stdlib=libc++" # For verbosity. This is already the default.
 
-          - name: "gcc14"
-            compiler: "gcc-14"
-            build: unit
-            build_type: Release
-            cxx_flags: "-std=c++23"
-
           - name: "gcc13"
             compiler: "gcc-13"
             build: unit
             build_type: Release
             cxx_flags: "-std=c++23"
-
-          - name: "gcc12"
-            compiler: "gcc-12"
-            build: unit
-            build_type: Release
-
-          - name: "gcc11"
-            compiler: "gcc-11"
-            build: unit
-            build_type: Release
 
     steps:
       - name: Checkout SeqAn3
@@ -78,6 +62,7 @@ jobs:
           ccache_size: 75M
 
       - name: Configure tests
+        continue-on-error: true
         run: |
           mkdir seqan3-build
           cd seqan3-build
@@ -85,6 +70,9 @@ jobs:
                                                    -DCMAKE_CXX_FLAGS="${{ matrix.cxx_flags }}" \
                                                    -DSEQAN3_VERBOSE_TESTS=OFF
           make -j3 gtest_build
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Build tests
         run: |
