@@ -6,16 +6,10 @@ name: Unit macOS
 
 on:
   push:
-    branches:
-      - 'main'
-  pull_request:
-    types:
-      - unlabeled
-  workflow_dispatch:
 
 concurrency:
   group: macos-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'push' }}
+  cancel-in-progress: true
 
 env:
   SEQAN3_NO_VERSION_CHECK: 1
@@ -28,11 +22,10 @@ defaults:
 jobs:
   build:
     name: ${{ matrix.name }}
-    runs-on: macos-12
+    runs-on: macos-latest # arm64
     timeout-minutes: 120
-    if: github.repository_owner == 'seqan' || github.event_name == 'workflow_dispatch' || github.event.label.name == 'lint'
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - name: "clang17"
@@ -40,6 +33,12 @@ jobs:
             build: unit
             build_type: Release
             cxx_flags: "-stdlib=libc++" # For verbosity. This is already the default.
+
+          - name: "gcc14"
+            compiler: "gcc-14"
+            build: unit
+            build_type: Release
+            cxx_flags: "-std=c++23"
 
           - name: "gcc13"
             compiler: "gcc-13"
@@ -77,11 +76,6 @@ jobs:
         with:
           compiler: ${{ matrix.compiler }}
           ccache_size: 75M
-
-      - name: Install CMake
-        uses: seqan/actions/setup-cmake@main
-        with:
-          cmake: 3.16.9
 
       - name: Configure tests
         run: |
