@@ -64,11 +64,9 @@ jobs:
       - name: Debug
         run: |
           xcode-select --version
-          xcodebuild -version
           pkgutil --pkg-info=com.apple.pkg.CLTools_Executables | grep version
           sudo xcode-select --switch /Library/Developer/CommandLineTools/
           xcode-select --version
-          xcodebuild -version
           pkgutil --pkg-info=com.apple.pkg.CLTools_Executables | grep version
 
       - name: Configure tests
