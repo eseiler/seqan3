@@ -79,9 +79,6 @@ jobs:
                                                    -DSEQAN3_VERBOSE_TESTS=OFF
           make -j3 gtest_build
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: Build tests
         run: |
           ccache -z
