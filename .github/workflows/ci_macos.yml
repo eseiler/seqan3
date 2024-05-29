@@ -65,7 +65,7 @@ jobs:
           ccache_size: 75M
 
       - name: fix
-        run: echo "SDKROOT=$(${{ inputs.compiler }} -v 2>&1 | sed -n 's@.*--with-sysroot=\([^ ]*\).*@\1@p')" >> "$GITHUB_ENV"
+        run: echo "SDKROOT=$(${{ matrix.compiler }} -v 2>&1 | sed -n 's@.*--with-sysroot=\([^ ]*\).*@\1@p')" >> "$GITHUB_ENV"
 
       - name: Configure tests
         run: |
