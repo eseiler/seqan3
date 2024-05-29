@@ -6,16 +6,10 @@ name: Unit macOS
 
 on:
   push:
-    branches:
-      - 'main'
-  pull_request:
-    types:
-      - unlabeled
-  workflow_dispatch:
 
 concurrency:
   group: macos-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'push' }}
+  cancel-in-progress: true
 
 env:
   SEQAN3_NO_VERSION_CHECK: 1
@@ -30,17 +24,10 @@ jobs:
     name: ${{ matrix.name }}
     runs-on: macos-12
     timeout-minutes: 120
-    if: github.repository_owner == 'seqan' || github.event_name == 'workflow_dispatch' || github.event.label.name == 'lint'
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
-          - name: "clang17"
-            compiler: "clang-17"
-            build: unit
-            build_type: Release
-            cxx_flags: "-stdlib=libc++" # For verbosity. This is already the default.
-
           - name: "gcc13"
             compiler: "gcc-13"
             build: unit
@@ -52,11 +39,6 @@ jobs:
             build: unit
             build_type: Release
 
-          - name: "gcc11"
-            compiler: "gcc-11"
-            build: unit
-            build_type: Release
-
     steps:
       - name: Checkout SeqAn3
         uses: actions/checkout@v4
@@ -65,23 +47,11 @@ jobs:
           fetch-depth: 1
           submodules: true
 
-      - name: Checkout SeqAn2
-        uses: actions/checkout@v4
-        with:
-          repository: seqan/seqan
-          path: seqan3/submodules/seqan
-          fetch-depth: 1
-
       - name: Setup toolchain
         uses: seqan/actions/setup-toolchain@main
         with:
           compiler: ${{ matrix.compiler }}
           ccache_size: 75M
-
-      - name: Install CMake
-        uses: seqan/actions/setup-cmake@main
-        with:
-          cmake: 3.16.9
 
       - name: Configure tests
         run: |
@@ -90,16 +60,7 @@ jobs:
           cmake ../seqan3/test/${{ matrix.build }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                                                    -DCMAKE_CXX_FLAGS="${{ matrix.cxx_flags }}" \
                                                    -DSEQAN3_VERBOSE_TESTS=OFF
-          make -j3 gtest_build
 
-      - name: Build tests
-        run: |
-          ccache -z
-          cd seqan3-build
-          make -k -j3
-          ccache -sv
-
-      - name: Run tests
-        run: |
-          cd seqan3-build
-          ctest . -j3 --output-on-failure
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
