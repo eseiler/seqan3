@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: 2006-2024 Knut Reinert & Freie Universität Berlin
+# SPDX-FileCopyrightText: 2016-2024 Knut Reinert & MPI für molekulare Genetik
+# SPDX-License-Identifier: CC-BY-4.0
+
+name: 'Deploy Preview'
+description: 'Deploys a preview.'
+inputs:
+  deploy_host:
+    description: "The host to deploy to."
+    type: string
+    required: true
+  deploy_base_path:
+    description: "The host path to deploy to."
+    type: string
+    required: true
+  deploy_user:
+    description: "The private SSH key for connecting to the host."
+    type: string
+    required: true
+  deploy_ssh_key:
+    description: "The private SSH key for connecting to the host."
+    type: string
+    required: true
+  source_path_user_doc:
+    description: "The path to the user documentation."
+    type: string
+    required: true
+  source_path_dev_doc:
+    description: "The path to the developer documentation."
+    type: string
+    required: false
+runs:
+  using: 'composite'
+  steps:
+    - name: Package Preview Dual Documentation
+      if: ${{ inputs.source_path_dev_doc != '' }}
+      run: |
+        mkdir -p preview/{usr,dev}
+        cp -r ${{ inputs.source_path_user_doc }} preview/usr/
+        cp -r ${{ inputs.source_path_dev_doc }} preview/dev/
+        cp ${{ github.action_path }}/index.html preview/
+        cp ${{ github.action_path }}/style.css preview/
+
+    - name: Package Preview Single Documentation
+      if: ${{ inputs.source_path_dev_doc == '' }}
+      run: |
+        mkdir -p preview
+        cp -r ${{ inputs.source_path_user_doc }}/* preview/
+
+    - name: Deploy Preview
+      uses: burnett01/rsync-deployments@7.0.1
+      with:
+        switches: '-zr --delete --timeout=60 --omit-dir-times --mkpath'
+        path: 'preview/'
+        remote_path: '${{ inputs.deploy_base_path }}/${{ github.event.pull_request.number || github.actor }}'
+        remote_host: ${{ inputs.deploy_host }}
+        remote_user: ${{ inputs.deploy_user }}
+        remote_key: ${{ inputs.deploy_ssh_key }}

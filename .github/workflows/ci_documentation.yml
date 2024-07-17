@@ -11,6 +11,7 @@ on:
   pull_request:
     types:
       - unlabeled
+      - closed
   workflow_dispatch:
 
 concurrency:
@@ -29,7 +30,7 @@ jobs:
   build:
     name: Documentation
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'seqan' || github.event_name == 'workflow_dispatch' || github.event.label.name == 'lint'
+    if: github.event.pull_request.github.repository_owner == 'seqan' || github.event_name == 'workflow_dispatch' || github.event.label.name == 'lint'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,20 +50,30 @@ jobs:
         working-directory: build
         run: ctest . -j --output-on-failure
 
-      - name: Package Preview
-        run: |
-          mkdir -p preview/{usr,dev}
-          mv build/doc_usr/html preview/usr/
-          mv build/doc_dev/html preview/dev/
-          cp .github/workflows/preview/index.html preview/
-          cp .github/workflows/preview/style.css preview/
-
       - name: Deploy Preview
-        uses: burnett01/rsync-deployments@7.0.1
+        uses: eseiler/seqan3/composite/deploy_preview@infra/preview
         with:
-          switches: '-zr --delete --timeout=60 --omit-dir-times --mkpath'
-          path: 'preview/'
-          remote_path: '${{ secrets.REMOTE_PREVIEW_TARGET }}/${{ github.event.pull_request.number || github.actor }}'
-          remote_host: ${{ secrets.DEPLOY_HOST }}
-          remote_user: ${{ secrets.REMOTE_USER }}
-          remote_key: ${{ secrets.DEPLOY_HOST_SSH_KEY }}
+          source_path_user_doc: build/doc_usr/html
+          source_path_dev_doc: build/doc_dev/html
+          deploy_base_path: ${{ secrets.REMOTE_PREVIEW_TARGET }}
+          deploy_host: ${{ secrets.DEPLOY_HOST }}
+          deploy_user: ${{ secrets.REMOTE_USER }}
+          deploy_ssh_key: ${{ secrets.DEPLOY_HOST_SSH_KEY }}
+
+      # - name: Package Preview
+      #   run: |
+      #     mkdir -p preview/{usr,dev}
+      #     mv build/doc_usr/html preview/usr/
+      #     mv build/doc_dev/html preview/dev/
+      #     cp .github/workflows/preview/index.html preview/
+      #     cp .github/workflows/preview/style.css preview/
+
+      # - name: Deploy Preview
+      #   uses: burnett01/rsync-deployments@7.0.1
+      #   with:
+      #     switches: '-zr --delete --timeout=60 --omit-dir-times --mkpath'
+      #     path: 'preview/'
+      #     remote_path: '${{ secrets.REMOTE_PREVIEW_TARGET }}/${{ github.event.pull_request.number || github.actor }}'
+      #     remote_host: ${{ secrets.DEPLOY_HOST }}
+      #     remote_user: ${{ secrets.REMOTE_USER }}
+      #     remote_key: ${{ secrets.DEPLOY_HOST_SSH_KEY }}
