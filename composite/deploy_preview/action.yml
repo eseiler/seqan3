@@ -34,6 +34,7 @@ runs:
   steps:
     - name: Package Preview Dual Documentation
       if: ${{ inputs.source_path_dev_doc != '' }}
+      shell: bash
       run: |
         mkdir -p preview/{usr,dev}
         cp -r ${{ inputs.source_path_user_doc }} preview/usr/
@@ -43,6 +44,7 @@ runs:
 
     - name: Package Preview Single Documentation
       if: ${{ inputs.source_path_dev_doc == '' }}
+      shell: bash
       run: |
         mkdir -p preview
         cp -r ${{ inputs.source_path_user_doc }}/* preview/
