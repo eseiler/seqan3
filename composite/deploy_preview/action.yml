@@ -35,7 +35,7 @@ runs:
     - name: Error if not a pull request
       if: ${{ github.event_name != 'pull_request' }}
       shell: bash
-      run: echo "::error title=Error::This action can only be run on pull requests."
+      run: echo "::error title=Error::This action can only be run on pull requests." && exit 1
 
     - name: Package Preview Dual Documentation
       if: ${{ inputs.source_path_dev_doc != '' }}
@@ -59,7 +59,23 @@ runs:
       with:
         switches: '-zr --delete --timeout=60 --omit-dir-times --mkpath'
         path: 'preview/'
-        remote_path: '${{ inputs.deploy_base_path }}/${{ github.event.pull_request.number || github.actor }}'
+        remote_path: '${{ inputs.deploy_base_path }}/${{ github.event.pull_request.number }}'
         remote_host: ${{ inputs.deploy_host }}
         remote_user: ${{ inputs.deploy_user }}
         remote_key: ${{ inputs.deploy_ssh_key }}
+
+    - name: Find Comment
+      uses: peter-evans/find-comment@v3
+      id: find_comment
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-author: 'seqan-actions[bot]'
+        body-includes: Preview available
+
+    - name: Create
+      if: steps.find_comment.outputs.comment-id != ''
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        token: ${{ secrets.SEQAN_ACTIONS_PAT }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: Preview available at https://docs.seqan.de/preview/${{ github.event.pull_request.number }}
