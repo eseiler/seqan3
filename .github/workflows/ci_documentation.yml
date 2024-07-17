@@ -30,7 +30,7 @@ jobs:
   build:
     name: Documentation
     runs-on: ubuntu-latest
-    if: github.event.pull_request.github.repository_owner == 'seqan' || github.event_name == 'workflow_dispatch' || github.event.label.name == 'lint'
+    if: github.event.pull_request.github.repository_owner == 'eseiler' || github.event_name == 'workflow_dispatch' || github.event.label.name == 'lint'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
