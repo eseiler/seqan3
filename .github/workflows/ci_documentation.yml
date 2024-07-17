@@ -65,7 +65,7 @@ jobs:
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.REMOTE_PREVIEW_TARGET }}
         with:
-          flags: '-zr --delete --timeout=60 --omit-dir-times'
+          flags: '-zr --delete --timeout=60 --omit-dir-times --mkpath'
           src: 'preview/'
           dest: '$REMOTE_USER@$REMOTE_HOST:$TARGET/${{ github.event.pull_request.number || github.ref }}'
 
