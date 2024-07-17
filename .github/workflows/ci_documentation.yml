@@ -47,7 +47,7 @@ jobs:
         run: ctest . -j --output-on-failure
 
       - name: Deploy Preview
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' }}
         uses: eseiler/seqan3/composite/deploy_preview@infra/preview
         with:
           source_path_user_doc: build/doc_usr/html
