@@ -51,7 +51,7 @@ jobs:
         uses: eseiler/seqan3/composite/deploy_preview@infra/preview
         with:
           source_path_user_doc: build/doc_usr/html
-          source_path_dev_doc: build/doc_dev/html
+          source_path_developer_doc: build/doc_dev/html
           deploy_base_path: ${{ secrets.REMOTE_PREVIEW_TARGET }}
           deploy_host: ${{ secrets.DEPLOY_HOST }}
           deploy_user: ${{ secrets.REMOTE_USER }}

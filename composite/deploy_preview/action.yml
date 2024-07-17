@@ -14,7 +14,7 @@ inputs:
     type: string
     required: true
   deploy_user:
-    description: "The private SSH key for connecting to the host."
+    description: "The user name for connecting to the host."
     type: string
     required: true
   deploy_ssh_key:
@@ -22,11 +22,11 @@ inputs:
     type: string
     required: true
   source_path_user_doc:
-    description: "The path to the user documentation."
+    description: "The path to the user documentation. This is the directory containing the HTML files."
     type: string
     required: true
-  source_path_dev_doc:
-    description: "The path to the developer documentation."
+  source_path_developer_doc:
+    description: "The path to the developer documentation. This is the directory containing the HTML files."
     type: string
     required: false
   token:
@@ -45,9 +45,9 @@ runs:
       if: ${{ inputs.source_path_dev_doc != '' }}
       shell: bash
       run: |
-        mkdir -p preview/{usr,dev}
-        cp -r ${{ inputs.source_path_user_doc }} preview/usr/
-        cp -r ${{ inputs.source_path_dev_doc }} preview/dev/
+        mkdir -p preview/{user,developer}
+        cp -r ${{ inputs.source_path_user_doc }}/* preview/user/
+        cp -r ${{ inputs.source_path_dev_doc }}/* preview/developer/
         cp ${{ github.action_path }}/index.html preview/
         cp ${{ github.action_path }}/seqan_logo.svg preview/
         cp ${{ github.action_path }}/style.css preview/
