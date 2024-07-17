@@ -47,9 +47,7 @@ function addVersionSelection(arr)
     version_select.addEventListener("change", function(){changeVersion(this.id);}, false);
 
     // current selection is..
-    cur_sel = window.location.pathname.split("/")[2];
-
-    console.log("Current version: " + cur_sel);
+    cur_sel = window.location.pathname.split("/").at(-2);
 
     for(i=0; i < arr.length; ++i)
     {
