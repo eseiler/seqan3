@@ -57,21 +57,3 @@ jobs:
           deploy_user: ${{ secrets.REMOTE_USER }}
           deploy_ssh_key: ${{ secrets.DEPLOY_HOST_SSH_KEY }}
           token: ${{ secrets.TEST_PAT }}
-
-      # - name: Package Preview
-      #   run: |
-      #     mkdir -p preview/{usr,dev}
-      #     mv build/doc_usr/html preview/usr/
-      #     mv build/doc_dev/html preview/dev/
-      #     cp .github/workflows/preview/index.html preview/
-      #     cp .github/workflows/preview/style.css preview/
-
-      # - name: Deploy Preview
-      #   uses: burnett01/rsync-deployments@7.0.1
-      #   with:
-      #     switches: '-zr --delete --timeout=60 --omit-dir-times --mkpath'
-      #     path: 'preview/'
-      #     remote_path: '${{ secrets.REMOTE_PREVIEW_TARGET }}/${{ github.event.pull_request.number || github.actor }}'
-      #     remote_host: ${{ secrets.DEPLOY_HOST }}
-      #     remote_user: ${{ secrets.REMOTE_USER }}
-      #     remote_key: ${{ secrets.DEPLOY_HOST_SSH_KEY }}
