@@ -48,3 +48,24 @@ jobs:
       - name: Run tests
         working-directory: build
         run: ctest . -j --output-on-failure
+
+      - name: Package Preview
+        run: |
+          mkdir -p preview/{usr,dev}
+          mv build/doc_user/html preview/usr/
+          mv build/doc_dev/html preview/dev/
+          cp .github/preview/index.html preview/
+          cp .github/preview/style.css preview/
+
+      - name: Deploy Preview
+        uses: Pendect/action-rsyncer@v2.0.0
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_HOST_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.DEPLOY_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.REMOTE_PREVIEW_TARGET }}
+        with:
+          flags: '-zr --delete --timeout=60 --omit-dir-times'
+          src: 'preview/'
+          dest: '$REMOTE_USER@$REMOTE_HOST:$TARGET/${{ github.event.pull_request.number || github.ref }}'
+
