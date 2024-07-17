@@ -4,6 +4,8 @@
 
 cmake_minimum_required (VERSION 3.14)
 
+cmake_policy (SET CMP0135 NEW)
+
 # We can only set one CMAKE_SYSTEM_PREFIX_PATH, i.e. it cannot be a list.
 # Hence we need to reuse the SEQAN3_SYSTEM_PREFIX.
 if (NOT DEFINED SEQAN3_SYSTEM_PREFIX)
