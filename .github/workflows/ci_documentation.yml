@@ -63,7 +63,7 @@ jobs:
         with:
           switches: '-zr --delete --timeout=60 --omit-dir-times --mkpath'
           path: 'preview.tar.zst'
-          remote_path: '${{ secrets.REMOTE_PREVIEW_TARGET }}/${{ github.event.pull_request.number || 'test' }}'
+          remote_path: '${{ secrets.REMOTE_PREVIEW_TARGET }}/${{ github.event.pull_request.number || "test" }}'
           remote_host: ${{ secrets.DEPLOY_HOST }}
           remote_user: ${{ secrets.REMOTE_USER }}
           remote_key: ${{ secrets.DEPLOY_HOST_SSH_KEY }}
@@ -75,6 +75,6 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.DEPLOY_HOST_SSH_KEY }}
           script: |
-            cd '${{ secrets.REMOTE_PREVIEW_TARGET }}/${{ github.event.pull_request.number || 'test' }}'
+            cd '${{ secrets.REMOTE_PREVIEW_TARGET }}/${{ github.event.pull_request.number || "test" }}'
             tar xf preview.tar.zst --strip-components=1 --overwrite
 
