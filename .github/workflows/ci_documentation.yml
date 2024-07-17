@@ -58,7 +58,7 @@ jobs:
           cp .github/workflows/preview/style.css preview/
 
       - name: Deploy Preview
-        uses: burnett01/rsync-deployments@7
+        uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: '-zr --delete --timeout=60 --omit-dir-times --mkpath'
           path: 'preview/'
