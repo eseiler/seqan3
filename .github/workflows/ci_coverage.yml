@@ -101,5 +101,6 @@ jobs:
       - name: Submit coverage build
         uses: codecov/codecov-action@v3.1.5
         with:
+          token: a75b1e95-134c-4ada-adac-5846045f188e
           files: build/coverage_report.xml
           fail_ci_if_error: false
