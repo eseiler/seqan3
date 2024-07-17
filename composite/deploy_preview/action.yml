@@ -49,6 +49,7 @@ runs:
         cp -r ${{ inputs.source_path_user_doc }} preview/usr/
         cp -r ${{ inputs.source_path_dev_doc }} preview/dev/
         cp ${{ github.action_path }}/index.html preview/
+        cp ${{ github.action_path }}/seqan_logo.svg preview/
         cp ${{ github.action_path }}/style.css preview/
 
     - name: Package Preview Single Documentation
@@ -73,7 +74,6 @@ runs:
       id: find_comment
       with:
         issue-number: ${{ github.event.pull_request.number }}
-        comment-author: 'seqan-actions[bot]'
         body-includes: Preview available
 
     - name: Create
