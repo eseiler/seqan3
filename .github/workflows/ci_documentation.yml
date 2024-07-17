@@ -11,10 +11,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-concurrency:
-  group: documentation-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'push' }}
-
 env:
   SEQAN3_NO_VERSION_CHECK: 1
   TZ: Europe/Berlin
@@ -29,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'eseiler'
     steps:
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v2
+
       - name: Checkout
         uses: actions/checkout@v4
 
