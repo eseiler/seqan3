@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2006-2024 Knut Reinert & Freie Universität Berlin
+# SPDX-FileCopyrightText: 2016-2024 Knut Reinert & MPI für molekulare Genetik
+# SPDX-License-Identifier: CC0-1.0
+
+name: removePreview
+
+on:
+  pull_request:
+    - closed
+
+env:
+  TZ: Europe/Berlin
+
+defaults:
+  run:
+    shell: bash -Eeuxo pipefail {0}
+
+jobs:
+  build:
+    name: removePreview
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'eseiler'
+    steps:
+      - name: Remove Preview
+        uses: eseiler/seqan3/composite/delete_preview@infra/preview
+        with:
+          deploy_base_path: ${{ secrets.REMOTE_PREVIEW_TARGET }}
+          deploy_host: ${{ secrets.DEPLOY_HOST }}
+          deploy_user: ${{ secrets.REMOTE_USER }}
+          deploy_ssh_key: ${{ secrets.DEPLOY_HOST_SSH_KEY }}

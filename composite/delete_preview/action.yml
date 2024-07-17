@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2006-2024 Knut Reinert & Freie Universität Berlin
+# SPDX-FileCopyrightText: 2016-2024 Knut Reinert & MPI für molekulare Genetik
+# SPDX-License-Identifier: CC-BY-4.0
+
+name: 'Delete Preview'
+description: 'Deletes a preview.'
+inputs:
+  deploy_host:
+    description: "The host to deploy to."
+    type: string
+    required: true
+  deploy_base_path:
+    description: "The host path to deploy to."
+    type: string
+    required: true
+  deploy_user:
+    description: "The private SSH key for connecting to the host."
+    type: string
+    required: true
+  deploy_ssh_key:
+    description: "The private SSH key for connecting to the host."
+    type: string
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Error if not a pull request
+      if: ${{ github.event_name != 'pull_request' }}
+      shell: bash
+      run: echo "::error title=Error::This action can only be run on pull requests."; exit 1
+
+    - name: Delete Preview
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ inputs.deploy_host }}
+        username: ${{ inputs.deploy_user }}
+        key: ${{ inputs.deploy_ssh_key }}
+        script: ${{ inputs.deploy_base_path }}/delete_preview.sh "${{ github.event.pull_request.base.repo.full_name }}" "${{ github.event.pull_request.number }}"

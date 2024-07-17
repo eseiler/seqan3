@@ -39,7 +39,7 @@ runs:
     - name: Error if not a pull request
       if: ${{ github.event_name != 'pull_request' }}
       shell: bash
-      run: echo "::error title=Error::This action can only be run on pull requests." && exit 1
+      run: echo "::error title=Error::This action can only be run on pull requests."; exit 1
 
     - name: Package Preview Dual Documentation
       if: ${{ inputs.source_path_dev_doc != '' }}
@@ -80,6 +80,6 @@ runs:
       if: steps.find_comment.outputs.comment-id == ''
       uses: peter-evans/create-or-update-comment@v4
       with:
-        token: ${{ inputs.pat }}
+        token: ${{ inputs.token }}
         issue-number: ${{ github.event.pull_request.number }}
         body: Preview available at https://docs.seqan.de/preview/${{ github.event.pull_request.base.repo.full_name }}/${{ github.event.pull_request.number }}
