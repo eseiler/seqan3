@@ -54,8 +54,8 @@ jobs:
           mkdir -p preview/{usr,dev}
           mv build/doc_usr/html preview/usr/
           mv build/doc_dev/html preview/dev/
-          cp .github/preview/index.html preview/
-          cp .github/preview/style.css preview/
+          cp .github/workflows/preview/index.html preview/
+          cp .github/workflows/preview/style.css preview/
 
       - name: Deploy Preview
         uses: Pendect/action-rsyncer@v2.0.0
