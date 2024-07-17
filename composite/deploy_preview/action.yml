@@ -29,8 +29,8 @@ inputs:
     description: "The path to the developer documentation."
     type: string
     required: false
-  pat:
-    description: "The personal access token to use for the comment."
+  token:
+    description: "The access token to use for the comment."
     type: string
     required: true
 runs:

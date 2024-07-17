@@ -55,7 +55,7 @@ jobs:
           deploy_host: ${{ secrets.DEPLOY_HOST }}
           deploy_user: ${{ secrets.REMOTE_USER }}
           deploy_ssh_key: ${{ secrets.DEPLOY_HOST_SSH_KEY }}
-          pat: ${{ secrets.TEST_PAT }}
+          token: ${{ secrets.TEST_PAT }}
 
       # - name: Package Preview
       #   run: |
