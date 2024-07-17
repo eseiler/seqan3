@@ -6,7 +6,8 @@ name: removePreview
 
 on:
   pull_request:
-    - closed
+    types:
+      - closed
 
 env:
   TZ: Europe/Berlin
