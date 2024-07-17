@@ -63,7 +63,7 @@ runs:
       with:
         switches: '-zr --delete --timeout=60 --omit-dir-times --mkpath'
         path: 'preview/'
-        remote_path: '${{ inputs.deploy_base_path }}/${{ github.event.pull_request.number }}'
+        remote_path: '${{ inputs.deploy_base_path }}/${{ github.event.pull_request.base.repo.full_name }}/${{ github.event.pull_request.number }}'
         remote_host: ${{ inputs.deploy_host }}
         remote_user: ${{ inputs.deploy_user }}
         remote_key: ${{ inputs.deploy_ssh_key }}
@@ -82,4 +82,4 @@ runs:
       with:
         token: ${{ inputs.pat }}
         issue-number: ${{ github.event.pull_request.number }}
-        body: Preview available at https://docs.seqan.de/preview/${{ github.event.pull_request.number }}
+        body: Preview available at https://docs.seqan.de/preview/${{ github.event.pull_request.base.repo.full_name }}/${{ github.event.pull_request.number }}
