@@ -32,6 +32,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Error if not a pull request
+      if: ${{ github.event_name != 'pull_request' }}
+      shell: bash
+      run: |
+        echo "::error title=Error::This action can only be run on pull requests."
+        exit 1
+
     - name: Package Preview Dual Documentation
       if: ${{ inputs.source_path_dev_doc != '' }}
       shell: bash
