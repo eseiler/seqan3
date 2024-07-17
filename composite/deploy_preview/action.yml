@@ -42,18 +42,18 @@ runs:
       run: echo "::error title=Error::This action can only be run on pull requests."; exit 1
 
     - name: Package Preview Dual Documentation
-      if: ${{ inputs.source_path_dev_doc != '' }}
+      if: ${{ inputs.source_path_developer_doc != '' }}
       shell: bash
       run: |
         mkdir -p preview/{user,developer}
         cp -r ${{ inputs.source_path_user_doc }}/* preview/user/
-        cp -r ${{ inputs.source_path_dev_doc }}/* preview/developer/
+        cp -r ${{ inputs.source_path_developer_doc }}/* preview/developer/
         cp ${{ github.action_path }}/index.html preview/
         cp ${{ github.action_path }}/seqan_logo.svg preview/
         cp ${{ github.action_path }}/style.css preview/
 
     - name: Package Preview Single Documentation
-      if: ${{ inputs.source_path_dev_doc == '' }}
+      if: ${{ inputs.source_path_developer_doc == '' }}
       shell: bash
       run: |
         mkdir -p preview

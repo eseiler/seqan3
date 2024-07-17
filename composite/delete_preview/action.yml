@@ -14,7 +14,7 @@ inputs:
     type: string
     required: true
   deploy_user:
-    description: "The private SSH key for connecting to the host."
+    description: "The user name for connecting to the host."
     type: string
     required: true
   deploy_ssh_key:
