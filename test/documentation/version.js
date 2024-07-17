@@ -49,6 +49,8 @@ function addVersionSelection(arr)
     // current selection is..
     cur_sel = window.location.pathname.split("/")[2];
 
+    console.log("Current version: " + cur_sel);
+
     for(i=0; i < arr.length; ++i)
     {
         var op = document.createElement("option");
