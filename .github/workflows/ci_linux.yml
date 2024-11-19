@@ -28,15 +28,14 @@ defaults:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: ${{ matrix.compiler }}
+    name: ${{ matrix.compiler }} ${{ matrix.build_type }} ${{ matrix.unity_test }}
     if: github.repository_owner == 'seqan' || github.event_name == 'workflow_dispatch' || github.event.label.name == 'lint'
     strategy:
       fail-fast: false
       matrix:
-        compiler: ["clang-19", "clang-18", "clang-17", "gcc-14", "gcc-13", "gcc-12", "gcc-11", "intel"]
-        include:
-          - compiler: "intel"
-            cxx_flags: "-fp-model=strict -Wno-overriding-option"
+        compiler: ["clang-19", "gcc-14"]
+        build_type: ['Release', 'Debug']
+        unity_test: ['ON', 'OFF']
     container:
       image: ghcr.io/seqan/${{ matrix.compiler }}
       volumes:
@@ -45,23 +44,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Load ccache
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/.ccache
-          key: ccache-${{ runner.os }}-${{ github.workflow }}-${{ matrix.compiler }}-${{ github.ref }}-${{ github.run_id }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.workflow }}-${{ matrix.compiler }}-${{ github.ref }}
-            ccache-${{ runner.os }}-${{ github.workflow }}-${{ matrix.compiler }}
-
       - name: Configure tests
         run: |
-          $CXX --version || true
-          cmake --version || true
           mkdir build && cd build
-          cmake ../test/unit -DCMAKE_BUILD_TYPE=Release \
-                             -DCMAKE_CXX_FLAGS="${{ matrix.cxx_flags }}"
-          make gtest_main
+          cmake ../test/unit -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                             -DCMAKE_CXX_FLAGS="-std=c++23" \
+                             -DCMAKE_UNITY_BUILD=${{ matrix.unity_test }} \
+                             -DCMAKE_UNITY_BUILD_BATCH_SIZE=16
 
       - name: Build tests
         working-directory: build
