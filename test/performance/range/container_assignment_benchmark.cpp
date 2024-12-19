@@ -54,13 +54,6 @@ struct assignment_functor
 };
 
 template <typename container_t>
-    requires requires (container_t v) { v.clear(); }
-static constexpr void clear(container_t & container) noexcept(noexcept(std::declval<container_t>().clear()))
-{
-    container.clear();
-}
-
-template <typename container_t>
     requires requires (container_t v) { v.resize(1u); }
 static constexpr void resize(container_t & container,
                              size_t const size) noexcept(noexcept(std::declval<container_t>().resize(1u)))
@@ -69,12 +62,6 @@ static constexpr void resize(container_t & container,
 }
 
 #if SEQAN3_HAS_SEQAN2
-template <typename container_t>
-static constexpr void clear(container_t & container) noexcept(noexcept(seqan2::clear(std::declval<container_t>())))
-{
-    seqan2::clear(container);
-}
-
 template <typename container_t>
 static constexpr void resize(container_t & container,
                              size_t const size) noexcept(noexcept(seqan2::resize(std::declval<container_t>(), 1u)))
@@ -106,8 +93,6 @@ static void assign(benchmark::State & state)
     for (auto _ : state)
     {
         fn.call(to, from);
-        benchmark::ClobberMemory();
-        clear(to);
         benchmark::ClobberMemory();
     }
 }
