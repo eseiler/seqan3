@@ -15,6 +15,7 @@ concurrency:
 
 env:
   TZ: Europe/Berlin
+  DEBIAN_FRONTEND: noninteractive
 
 defaults:
   run:
@@ -30,8 +31,9 @@ jobs:
     steps:
       - name: Install Essentials
         run: |
+          mkdir -p unstable/seqan3
           apt-get update
-          apt-get install --yes --no-install-recommends build-essential git cmake wget fakeroot ca-certificates
+          apt-get install --yes --no-install-recommends build-essential git cmake wget fakeroot ca-certificates autopkgtest &>unstable/apt.essentials.log
 
       - name: Create Source Package
         id: source_package
@@ -45,8 +47,8 @@ jobs:
           echo "path=${path}" >> $GITHUB_OUTPUT
 
       - name: Create Debian Repo
+        working-directory: unstable
         run: |
-          mkdir -p unstable/seqan3 && cd unstable
           tar xf ${{ steps.source_package.outputs.path }} -C seqan3 --strip-components=1
           cd seqan3
           git init .
@@ -56,19 +58,25 @@ jobs:
 
       - name: Install Dependencies
         working-directory: unstable/seqan3
-        run: apt-get build-dep --yes --no-install-recommends .
+        run: apt-get build-dep --yes --no-install-recommends . &>../apt.build-dep.log
 
       - name: Build
         working-directory: unstable/seqan3
-        run: dpkg-buildpackage --unsigned-changes --unsigned-source --build=binary
+        run: dpkg-buildpackage --unsigned-changes --unsigned-source --build=binary &>../seqan3.dpkg.log
+
+      - name: Autopkgtest
+        working-directory: unstable/seqan3
+        run: autopkgtest ../seqan3*.deb ../libseqan3*.deb -- null &>../seqan3.autopkg.log
+
+      - name: Delete Repo
+        if: always()
+        continue-on-error: true
+        working-directory: unstable
+        run: rm -fdr seqan3
 
       - name: Upload Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: debian-seqan3-artifacts
-          path: |
-            unstable/**/seqan3*.deb
-            unstable/**/libseqan3*.deb
-            unstable/**/seqan3*.changes
-            unstable/**/seqan3*.buildinfo
+          path: unstable
