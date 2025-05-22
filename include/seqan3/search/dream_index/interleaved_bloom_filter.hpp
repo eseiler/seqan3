@@ -551,11 +551,8 @@ template <data_layout data_layout_mode>
 class interleaved_bloom_filter<data_layout_mode>::membership_agent_type
 {
 private:
-    //!\brief The type of the augmented seqan3::interleaved_bloom_filter.
-    using ibf_t = interleaved_bloom_filter<data_layout_mode>;
-
     //!\brief A pointer to the augmented seqan3::interleaved_bloom_filter.
-    ibf_t const * ibf_ptr{nullptr};
+    interleaved_bloom_filter<data_layout_mode> const * ibf_ptr{nullptr};
 
 public:
     class binning_bitvector;
@@ -574,7 +571,7 @@ public:
      * \private
      * \param ibf The seqan3::interleaved_bloom_filter.
      */
-    explicit membership_agent_type(ibf_t const & ibf) : ibf_ptr(std::addressof(ibf)), result_buffer(ibf.bin_count())
+    explicit membership_agent_type(interleaved_bloom_filter<data_layout_mode> const & ibf) : ibf_ptr(std::addressof(ibf)), result_buffer(ibf.bin_count())
     {}
     //!\}
 
@@ -934,11 +931,8 @@ class interleaved_bloom_filter<data_layout_mode>::counting_agent_type
 private:
     static_assert(std::integral<value_t>, "The value type must model std::integral.");
 
-    //!\brief The type of the augmented seqan3::interleaved_bloom_filter.
-    using ibf_t = interleaved_bloom_filter<data_layout_mode>;
-
     //!\brief A pointer to the augmented seqan3::interleaved_bloom_filter.
-    ibf_t const * ibf_ptr{nullptr};
+    interleaved_bloom_filter<data_layout_mode> const * ibf_ptr{nullptr};
 
     //!\brief Store a seqan3::interleaved_bloom_filter::membership_agent to call `bulk_contains`.
     membership_agent_type membership_agent;
@@ -958,7 +952,7 @@ public:
      * \private
      * \param ibf The seqan3::interleaved_bloom_filter.
      */
-    explicit counting_agent_type(ibf_t const & ibf) :
+    explicit counting_agent_type(interleaved_bloom_filter<data_layout_mode> const & ibf) :
         ibf_ptr(std::addressof(ibf)),
         membership_agent(ibf),
         result_buffer(ibf.bin_count())
