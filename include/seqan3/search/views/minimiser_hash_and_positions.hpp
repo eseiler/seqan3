@@ -107,6 +107,7 @@ private:
 
     uint64_t kmer_mask{std::numeric_limits<uint64_t>::max()};
     uint64_t kmer_value{};
+    uint64_t kmer_value_rev{};
 
     size_t range_size{};
     size_t range_position{};
@@ -208,6 +209,9 @@ private:
         kmer_value <<= 2;
         kmer_value |= new_rank;
         kmer_value &= kmer_mask;
+
+        kmer_value_rev >>= 2;
+        kmer_value_rev |= (new_rank ^ 0b11) << 2 * (params.minimiser_size - 1);
     }
 
     template <pop_first pop>
@@ -221,7 +225,7 @@ private:
         if constexpr (pop == pop_first::yes)
             kmer_values_in_window.pop_front();
 
-        kmer_values_in_window.push_back(kmer_value);
+        kmer_values_in_window.push_back(std::min<uint64_t>(kmer_value, kmer_value_rev));
     }
 
     void find_minimiser_in_window()
@@ -235,7 +239,7 @@ private:
     {
         // range_it is already at the beginning of the range
         rolling_hash();
-        kmer_values_in_window.push_back(kmer_value);
+        kmer_values_in_window.push_back(std::min<uint64_t>(kmer_value, kmer_value_rev));
 
         // After this loop, `kmer_values_in_window` contains the first kmer value of the window.
         for (size_t i = 1u; i < params.minimiser_size; ++i)
