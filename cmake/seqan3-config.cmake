@@ -184,10 +184,12 @@ endif ()
 # seqan-std dependency
 # ----------------------------------------------------------------------------
 
-if (SEQAN3_HAS_CPM AND NOT CMAKE_DISABLE_FIND_PACKAGE_seqan-std)
+if (EXISTS "${SEQAN3_INCLUDE_DIR}/seqan3/vendor/seqan-std")
+    list (APPEND SEQAN3_INCLUDE_DIR "${SEQAN3_INCLUDE_DIR}/vendor")
+elseif (SEQAN3_HAS_CPM AND NOT CMAKE_DISABLE_FIND_PACKAGE_seqan-std)
     CPMGetPackage (seqan-std)
 else ()
-    list (APPEND SEQAN3_INCLUDE_DIR "${SEQAN3_INCLUDE_DIR}/vendor")
+    seqan3_config_error ("Could not find seqan-std.")
 endif ()
 
 if (TARGET seqan::std)
