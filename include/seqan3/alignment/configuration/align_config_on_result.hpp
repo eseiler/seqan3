@@ -12,8 +12,9 @@
 #include <type_traits>
 
 #include <seqan3/alignment/configuration/detail.hpp>
-#include <seqan3/contrib/std/detail/movable_box.hpp>
 #include <seqan3/core/configuration/pipeable_config_element.hpp>
+
+#include <seqan-std/detail/movable_box.hpp>
 
 namespace seqan3::align_cfg
 {

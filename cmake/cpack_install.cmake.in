@@ -10,4 +10,8 @@ if (CPACK_SOURCE_INSTALLED_DIRECTORIES)
         configure_file ("@use_ccache_SOURCE_DIR@/ccache/CMakeLists.txt"
                         "${CMAKE_CURRENT_BINARY_DIR}/test/cmake/seqan3_require_ccache.cmake" COPYONLY)
     endif ()
+    if ("@seqan-std_ADDED@" STREQUAL "YES")
+        file (COPY "@seqan-std_SOURCE_DIR@/include/seqan-std"
+              DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/include/seqan3/vendor")
+    endif ()
 endif ()

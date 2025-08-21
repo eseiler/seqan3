@@ -181,6 +181,20 @@ else ()
 endif ()
 
 # ----------------------------------------------------------------------------
+# seqan-std dependency
+# ----------------------------------------------------------------------------
+
+if (SEQAN3_HAS_CPM AND NOT CMAKE_DISABLE_FIND_PACKAGE_seqan-std)
+    CPMGetPackage (seqan-std)
+else ()
+    list (APPEND SEQAN3_INCLUDE_DIR "${SEQAN3_INCLUDE_DIR}/vendor")
+endif ()
+
+if (TARGET seqan::std)
+    list (APPEND SEQAN3_LIBRARIES seqan::std)
+endif ()
+
+# ----------------------------------------------------------------------------
 # Cereal dependency
 # ----------------------------------------------------------------------------
 

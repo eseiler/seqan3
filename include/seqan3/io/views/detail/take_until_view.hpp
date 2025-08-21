@@ -15,7 +15,6 @@
 #include <ranges>
 #include <type_traits>
 
-#include <seqan3/contrib/std/detail/movable_box.hpp>
 #include <seqan3/core/detail/iterator_traits.hpp>
 #include <seqan3/core/range/detail/adaptor_from_functor.hpp>
 #include <seqan3/core/range/detail/inherited_iterator_base.hpp>
@@ -23,6 +22,8 @@
 #include <seqan3/io/exception.hpp>
 #include <seqan3/utility/range/concept.hpp>
 #include <seqan3/utility/type_traits/detail/transformation_trait_or.hpp>
+
+#include <seqan-std/detail/movable_box.hpp>
 
 namespace seqan3::detail
 {

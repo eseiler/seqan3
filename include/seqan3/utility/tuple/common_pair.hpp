@@ -9,8 +9,9 @@
 
 #pragma once
 
-#include <seqan3/contrib/std/pair.hpp>
 #include <seqan3/core/platform.hpp>
+
+#include <seqan-std/pair.hpp>
 
 namespace seqan3
 {

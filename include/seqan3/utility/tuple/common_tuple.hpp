@@ -9,9 +9,10 @@
 
 #pragma once
 
-#include <seqan3/contrib/std/tuple.hpp>
 #include <seqan3/core/platform.hpp>
 #include <seqan3/utility/tuple/common_pair.hpp> // Included to not break API.
+
+#include <seqan-std/tuple.hpp>
 
 namespace seqan3
 {

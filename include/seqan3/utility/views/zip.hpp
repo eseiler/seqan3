@@ -9,9 +9,10 @@
 
 #pragma once
 
-#include <seqan3/contrib/std/zip_view.hpp>
 #include <seqan3/core/platform.hpp>
 #include <seqan3/utility/tuple/common_tuple.hpp> // Included to not break API.
+
+#include <seqan-std/zip_view.hpp>
 
 namespace seqan3::views
 {

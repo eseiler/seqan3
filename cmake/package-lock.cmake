@@ -73,5 +73,13 @@ CPMDeclarePackage (use_ccache
                    SOURCE_SUBDIR ccache
                    SYSTEM TRUE
                    EXCLUDE_FROM_ALL TRUE)
+# seqan-std
+set (SEQAN3_SEQAN_STD_VERSION fd3f552e77debff48567f8f592eacb7adc6168d1 CACHE STRING "")
+CPMDeclarePackage (seqan-std
+                   NAME seqan-std
+                   GIT_TAG ${SEQAN3_SEQAN_STD_VERSION} # main
+                   GITHUB_REPOSITORY seqan/seqan-std
+                   SYSTEM TRUE
+                   EXCLUDE_FROM_ALL TRUE)
 
 # cmake-format: on

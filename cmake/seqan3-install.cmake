@@ -20,3 +20,7 @@ install (FILES "${SEQAN3_CLONE_DIR}/cmake/seqan3-config.cmake" "${SEQAN3_CLONE_D
 
 # install seqan3 header files in /include/seqan3
 install (DIRECTORY "${SEQAN3_INCLUDE_DIR}/seqan3" TYPE INCLUDE)
+
+if (seqan-std_ADDED)
+    install (TARGETS seqan-std FILE_SET HEADERS DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/seqan3/vendor")
+endif ()

@@ -9,8 +9,9 @@
 
 #pragma once
 
-#include <seqan3/contrib/std/join_with_view.hpp>
 #include <seqan3/core/platform.hpp>
+
+#include <seqan-std/join_with_view.hpp>
 
 namespace seqan3::views
 {

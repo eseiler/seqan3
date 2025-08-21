@@ -9,8 +9,9 @@
 
 #pragma once
 
-#include <seqan3/contrib/std/to.hpp>
 #include <seqan3/core/platform.hpp>
+
+#include <seqan-std/to.hpp>
 
 namespace seqan3::ranges
 {
