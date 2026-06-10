@@ -151,7 +151,7 @@ private:
         auto rel_path = lexically_relative(sandbox_directory);
 
         // Leaving the temporary directory is not allowed.
-        if (rel_path.string().find("..") == 0)
+        if (rel_path.native().find("..") == 0)
         {
             throw std::filesystem::filesystem_error("Leaving temporary directory is not allowed!",
                                                     sandbox_directory,

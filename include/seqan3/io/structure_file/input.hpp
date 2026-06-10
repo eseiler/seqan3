@@ -512,7 +512,7 @@ public:
             ->open(filename, std::ios_base::in | std::ios::binary);
 
         if (!primary_stream->good())
-            throw file_open_error{"Could not open file " + filename.string() + " for reading."};
+            throw file_open_error{"Could not open file " + filename.native() + " for reading."};
 
         // possibly add intermediate decompression stream
         secondary_stream = detail::make_secondary_istream(*primary_stream, filename);

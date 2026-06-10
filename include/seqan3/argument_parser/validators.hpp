@@ -376,25 +376,25 @@ protected:
         // Check if extension is available.
         if (!path.has_extension())
             throw validation_error{detail::to_string("The given filename ",
-                                                     path.string(),
+                                                     path.native(),
                                                      " has no extension. Expected"
                                                      " one of the following valid extensions:",
                                                      extensions,
                                                      "!")};
 
-        std::string file_path{path.filename().string()};
+        std::string file_name{path.filename().native()};
 
         // Leading dot indicates a hidden file is not part of the extension.
-        if (file_path.front() == '.')
-            file_path.erase(0, 1);
+        if (file_name.front() == '.')
+            file_name.erase(0, 1);
 
         // Store a string_view containing all extensions for a better error message.
-        std::string const all_extensions{file_path.substr(file_path.find(".") + 1)};
+        std::string const all_extensions{file_name.substr(file_name.find(".") + 1)};
 
         // Compares the extensions in lower case.
         auto case_insensitive_ends_with = [&](std::string const & ext)
         {
-            return case_insensitive_string_ends_with(file_path, ext);
+            return case_insensitive_string_ends_with(file_name, ext);
         };
 
         // Check if requested extension is present.

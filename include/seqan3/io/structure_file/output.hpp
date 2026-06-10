@@ -166,7 +166,7 @@ public:
             ->open(filename, std::ios_base::out | std::ios::binary);
 
         if (!primary_stream->good())
-            throw file_open_error{"Could not open file " + filename.string() + " for writing."};
+            throw file_open_error{"Could not open file " + filename.native() + " for writing."};
 
         // possibly add intermediate compression stream
         secondary_stream = detail::make_secondary_ostream(*primary_stream, filename);
