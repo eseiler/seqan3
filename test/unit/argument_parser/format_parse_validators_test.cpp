@@ -147,7 +147,7 @@ TEST(validator_test, input_file)
         std::filesystem::path file_in_path;
 
         // option
-        std::string const & path = tmp_name.string();
+        std::string const & path = tmp_name.native();
         char const * argv[] = {"./argument_parser_test", "-i", path.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
         test_accessor::set_terminal_width(parser, 80);
@@ -159,15 +159,15 @@ TEST(validator_test, input_file)
                           seqan3::input_file_validator{formats});
 
         EXPECT_NO_THROW(parser.parse());
-        EXPECT_EQ(file_in_path.string(), path);
+        EXPECT_EQ(file_in_path.native(), path);
     }
 
     { // file list.
         std::vector<std::filesystem::path> input_files;
 
         // option
-        std::string const & path = tmp_name.string();
-        std::string const & path_2 = tmp_name_2.string();
+        std::string const & path = tmp_name.native();
+        std::string const & path_2 = tmp_name_2.native();
 
         char const * argv[] = {"./argument_parser_test", path.c_str(), path_2.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
@@ -176,8 +176,8 @@ TEST(validator_test, input_file)
 
         EXPECT_NO_THROW(parser.parse());
         EXPECT_EQ(input_files.size(), 2u);
-        EXPECT_EQ(input_files[0].string(), path);
-        EXPECT_EQ(input_files[1].string(), path_2);
+        EXPECT_EQ(input_files[0].native(), path);
+        EXPECT_EQ(input_files[1].native(), path_2);
     }
 
     { // get help page message
@@ -283,7 +283,7 @@ TEST(validator_test, output_file)
         std::filesystem::path file_out_path;
 
         // option
-        std::string const & path = tmp_name.string();
+        std::string const & path = tmp_name.native();
         char const * argv[] = {"./argument_parser_test", "-o", path.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
         test_accessor::set_terminal_width(parser, 80);
@@ -295,15 +295,15 @@ TEST(validator_test, output_file)
                           seqan3::output_file_validator{seqan3::output_file_open_options::create_new, formats});
 
         EXPECT_NO_THROW(parser.parse());
-        EXPECT_EQ(file_out_path.string(), path);
+        EXPECT_EQ(file_out_path.native(), path);
     }
 
     { // file list.
         std::vector<std::filesystem::path> output_files;
 
         // option
-        std::string const & path = tmp_name.string();
-        std::string const & path_3 = tmp_name_3.string();
+        std::string const & path = tmp_name.native();
+        std::string const & path_3 = tmp_name_3.native();
 
         char const * argv[] = {"./argument_parser_test", path.c_str(), path_3.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
@@ -315,8 +315,8 @@ TEST(validator_test, output_file)
 
         EXPECT_NO_THROW(parser.parse());
         EXPECT_EQ(output_files.size(), 2u);
-        EXPECT_EQ(output_files[0].string(), path);
-        EXPECT_EQ(output_files[1].string(), path_3);
+        EXPECT_EQ(output_files[0].native(), path);
+        EXPECT_EQ(output_files[1].native(), path_3);
     }
 
     // get help page message (overwriting prohibited)
@@ -431,7 +431,7 @@ TEST(validator_test, input_directory)
             std::filesystem::path dir_in_path;
 
             // option
-            std::string const & path = p.string();
+            std::string const & path = p.native();
             char const * argv[] = {"./argument_parser_test", "-i", path.c_str()};
             seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
             test_accessor::set_terminal_width(parser, 80);
@@ -443,7 +443,7 @@ TEST(validator_test, input_directory)
                               seqan3::input_directory_validator{});
 
             EXPECT_NO_THROW(parser.parse());
-            EXPECT_EQ(path, dir_in_path.string());
+            EXPECT_EQ(path, dir_in_path.native());
         }
     }
 
@@ -485,7 +485,7 @@ TEST(validator_test, output_directory)
         std::filesystem::path dir_out_path;
 
         // option
-        std::string const & path = p.string();
+        std::string const & path = p.native();
         char const * argv[] = {"./argument_parser_test", "-o", path.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
         test_accessor::set_terminal_width(parser, 80);
@@ -497,7 +497,7 @@ TEST(validator_test, output_directory)
                           seqan3::output_directory_validator{});
 
         EXPECT_NO_THROW(parser.parse());
-        EXPECT_EQ(path, dir_out_path.string());
+        EXPECT_EQ(path, dir_out_path.native());
     }
 
     { // Parent path exists and is writable.
@@ -1359,7 +1359,7 @@ TEST(validator_test, chaining_validators)
 
     // option
     {
-        std::string const & path = tmp_name.string();
+        std::string const & path = tmp_name.native();
         char const * argv[] = {"./argument_parser_test", "-s", path.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
         test_accessor::set_terminal_width(parser, 80);
@@ -1377,7 +1377,7 @@ TEST(validator_test, chaining_validators)
     }
 
     {
-        auto rel_path = tmp_name.relative_path().string();
+        auto rel_path = tmp_name.relative_path().native();
         char const * argv[] = {"./argument_parser_test", "-s", rel_path.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
         test_accessor::set_terminal_width(parser, 80);
@@ -1392,7 +1392,7 @@ TEST(validator_test, chaining_validators)
     }
 
     {
-        std::string const & path = invalid_extension.string();
+        std::string const & path = invalid_extension.native();
         char const * argv[] = {"./argument_parser_test", "-s", path.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
         test_accessor::set_terminal_width(parser, 80);
@@ -1408,7 +1408,7 @@ TEST(validator_test, chaining_validators)
 
     // with temporary validators
     {
-        std::string const & path = tmp_name.string();
+        std::string const & path = tmp_name.native();
         char const * argv[] = {"./argument_parser_test", "-s", path.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
         test_accessor::set_terminal_width(parser, 80);
@@ -1429,7 +1429,7 @@ TEST(validator_test, chaining_validators)
 
     // three validators
     {
-        std::string const & path = tmp_name.string();
+        std::string const & path = tmp_name.native();
         char const * argv[] = {"./argument_parser_test", "-s", path.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
         test_accessor::set_terminal_width(parser, 80);
@@ -1519,7 +1519,7 @@ TEST(validator_test, chaining_validators)
     // chaining with a container option value type
     {
         std::vector<std::string> option_list_value{};
-        std::string const & path = tmp_name.string();
+        std::string const & path = tmp_name.native();
         char const * argv[] = {"./argument_parser_test", "-s", path.c_str()};
         seqan3::argument_parser parser{"test_parser", 3, argv, seqan3::update_notifications::off};
         test_accessor::set_terminal_width(parser, 80);

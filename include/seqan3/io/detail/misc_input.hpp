@@ -104,7 +104,7 @@ inline auto make_secondary_istream(std::basic_istream<char_t> & primary_stream, 
 
     std::string extension{};
     if (filename.has_extension())
-        extension = filename.extension().string().substr(1);
+        extension = filename.extension().native().substr(1);
 
     // tests whether the given extension matches with one of the given compression tags.
     [[maybe_unused]] auto contains_extension = [](auto compression_tag, auto const & extension) constexpr

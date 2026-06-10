@@ -67,7 +67,7 @@ void set_format(format_variant_type & format, std::filesystem::path const & file
     using valid_formats = detail::transfer_template_args_onto_t<format_variant_type, type_list>;
 
     bool format_found = false;
-    std::string extension = file_name.extension().string();
+    std::string extension = file_name.extension().native();
     if (extension.size() > 1)
     {
         extension = extension.substr(1); // drop leading "."

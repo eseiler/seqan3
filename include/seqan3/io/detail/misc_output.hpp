@@ -44,7 +44,7 @@ inline auto make_secondary_ostream(std::basic_ostream<char_t> & primary_stream, 
         delete ptr;
     };
 
-    std::string extension = filename.extension().string();
+    std::string extension = filename.extension().native();
 
     if (extension == ".gz")
     {

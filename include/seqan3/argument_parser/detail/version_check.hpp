@@ -189,7 +189,7 @@ public:
 
         // build up command for server call
         std::string command = program + // no user defined input
-                              " " + out_file.string() + " "
+                              " " + out_file.native() + " "
                             + std::string{"https://seqan-update.cs.uni-tuebingen.de/check/SeqAn3_"} +
 #ifdef __linux
                               "Linux" +

@@ -113,7 +113,8 @@ public:
         auto tmp_base_dir = std::filesystem::temp_directory_path();
         tmp_base_dir /= std::filesystem::path{"seqan_test_XXXXXXXX"};
 
-        auto path_str = tmp_base_dir.string(); // Copy the underlying path to get access to the raw char *.
+        // Copy for `std::string::data()` access. `std::filesystem::path::c_str()` returns const char *.
+        auto path_str = tmp_base_dir.native();
 
         if (char * f = mkdtemp(path_str.data()); f == nullptr) // mkdtemp replaces XXXXXXXX in a safe and unique way.
         {
