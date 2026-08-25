@@ -16,7 +16,10 @@
 #include <seqan3/test/fixture/io/sequence_file/standard_fixture.hpp>
 #include <seqan3/test/pretty_printing.hpp>
 
-using sequence_file_seek_test_fixture = std::tuple<std::filesystem::path /*sequence_file_path*/,
+// GCC 14 on macOS runs into an internal compiler error when googletest's parameterised test machinery is
+// instantiated with a parameter type that carries an ABI tag, e.g. std::filesystem::path or std::string, also when
+// nested inside a std::tuple. std::string_view carries no ABI tag and converts to std::filesystem::path in SetUp().
+using sequence_file_seek_test_fixture = std::tuple<std::string_view /*sequence_file_path*/,
                                                    bool /*has_base_qualities*/,
                                                    std::vector<std::streampos> /*file_positions*/>;
 
