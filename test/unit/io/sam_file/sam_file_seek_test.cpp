@@ -16,7 +16,10 @@
 #include <seqan3/test/fixture/io/sam_file/simple_three_verbose_reads_fixture.hpp>
 #include <seqan3/test/pretty_printing.hpp>
 
-using sam_file_seek_test_fixture = std::tuple<std::filesystem::path, std::vector<std::streampos>>;
+// GCC 14 on macOS runs into an internal compiler error when googletest's parameterised test machinery is
+// instantiated with a parameter type that carries an ABI tag, e.g. std::filesystem::path or std::string, also when
+// nested inside a std::tuple. std::string_view carries no ABI tag and converts to std::filesystem::path in SetUp().
+using sam_file_seek_test_fixture = std::tuple<std::string_view, std::vector<std::streampos>>;
 
 struct sam_file_seek_test : public ::testing::TestWithParam<sam_file_seek_test_fixture>
 {
