@@ -273,8 +273,15 @@ public:
     using reference = common_tuple<underlying_ref_t, underlying_ref_t>;
     //!\brief The pointer type.
     using pointer = void;
-    //!\brief The iterator concept tag.
-    using iterator_concept = detail::iterator_concept_tag_t<underlying_iterator_type>;
+    /*!\brief The iterator concept tag.
+     * \details
+     *
+     * This iterator returns a prvalue proxy (seqan3::common_tuple) and can therefore never be contiguous, even if
+     * the `underlying_iterator_type` is. In that case, the concept is downgraded to std::random_access_iterator_tag.
+     */
+    using iterator_concept = std::conditional_t<std::contiguous_iterator<underlying_iterator_type>,
+                                                std::random_access_iterator_tag,
+                                                detail::iterator_concept_tag_t<underlying_iterator_type>>;
     //!\}
 
     /*!\name Constructors, destructor and assignment
