@@ -102,7 +102,7 @@ template <typename tuple_t>
     requires requires () {
         { detail::all_elements_model_totally_ordered(tuple_type_list_t<tuple_t>{}) };
     }
-static constexpr bool all_elements_model_totally_ordered_v =
+inline constexpr bool all_elements_model_totally_ordered_v =
     decltype(detail::all_elements_model_totally_ordered(tuple_type_list_t<tuple_t>{}))::value;
 } // namespace seqan3::detail
 
